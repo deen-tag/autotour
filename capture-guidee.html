@@ -29,6 +29,8 @@ button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
 .arrow.blink{animation:bl .9s ease-in-out infinite}
 @keyframes bl{50%{opacity:.25}}
 @media (prefers-reduced-motion:reduce){.arrow.blink{animation:none}}
+.rot{position:absolute;left:16px;right:16px;top:44%;background:rgba(0,0,0,.7);padding:14px;border-radius:12px;font-weight:600;text-align:center}
+#res button{margin:0 8px 8px 0}
 .hz{position:absolute;left:10%;right:10%;top:50%;height:3px;border-radius:2px;background:#ff6b6b;transition:background .2s}
 .hz.ok{background:#5cc3d6}
 .msg{position:absolute;left:16px;right:70px;top:calc(env(safe-area-inset-top,0px) + 14px);background:rgba(0,0,0,.6);padding:10px 14px;border-radius:12px;font-weight:600}
@@ -62,6 +64,7 @@ canvas{display:block;width:100%;height:auto}
   <video id="vid" playsinline muted autoplay></video>
   <div class="frame" id="frame"></div><div class="hz" id="hz"></div>
   <div class="arrow" id="arrow"></div>
+  <div class="rot" id="rot" hidden>↻ Tourne le téléphone en paysage pour un meilleur résultat</div>
   <div class="msg" id="msg">Cadre le véhicule en entier</div>
   <button id="stop">Annuler</button>
   <div class="pct" id="pct"></div>
@@ -74,7 +77,8 @@ canvas{display:block;width:100%;height:auto}
   <h1>Ta visite est prête</h1>
   <p class="mut">Glisse le doigt pour tourner autour du véhicule.</p>
   <div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas></div>
-  <button class="main" id="again">Refaire un tour</button>
+  <button class="main" id="save">Enregistrer la visite</button>
+  <button id="again">Refaire un tour</button>
 </div>
 
 <script>
@@ -103,7 +107,7 @@ $('begin').onclick=async()=>{
       await DeviceMotionEvent.requestPermission();
   }catch(e){}
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
     $('vid').srcObject=stream;await $('vid').play();
   }catch(e){
     $('err').textContent='La caméra n\u2019est pas accessible depuis cette page (autorisation refusée ou bloquée par l\u2019application). Ouvre la page dans un navigateur, ou héberge-la sur ton propre site.';
@@ -115,7 +119,7 @@ $('begin').onclick=async()=>{
 function prepare(){
   frames=Array(N).fill(null);count=0;acc=0;prevH=null;dir=0;capturing=false;gotOri=false;
   $('ticks').innerHTML='<i></i>'.repeat(N);
-  $('go').hidden=false;guide('','','Cadre le véhicule en entier');
+  $('go').hidden=false;guide('','','Cadre le véhicule en entier');cand=null;lastCommit=-1;checkRot();
   const ev='ondeviceorientationabsolute' in window?'deviceorientationabsolute':'deviceorientation';
   window.addEventListener(ev,onOri);window._ev=ev;
   window.addEventListener('devicemotion',onMotion);
@@ -131,8 +135,8 @@ function cleanup(back){
 
 /* ---------- Le tour ---------- */
 $('go').onclick=()=>{
-  $('go').hidden=true;capturing=true;prevH=null;acc=0;dir=0;lastProg=Date.now();
-  grab(0);guide('ok','◀ ▶','C\u2019est parti, marche lentement autour du véhicule');
+  $('go').hidden=true;capturing=true;prevH=null;acc=0;dir=0;lastProg=Date.now();cand=null;lastCommit=-1;checkRot();
+  guide('ok','◀ ▶','C\u2019est parti, marche lentement autour du véhicule');
   setTimeout(()=>{ // pas de capteur : une image toutes les 1,2 s
     if(capturing&&!gotOri){
       say('Capteurs indisponibles : une image toutes les 1,2 s. Marche régulièrement.');
@@ -140,16 +144,50 @@ $('go').onclick=()=>{
     }
   },1800);
 };
-function grab(i){
-  if(i<0||frames[i])return;
-  const v=$('vid'),s=Math.min(1,800/v.videoWidth),c=mk(Math.round(v.videoWidth*s),Math.round(v.videoHeight*s));
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+// Netteté d'une image (variance du laplacien sur la zone centrale)
+const sm=mk(320,180),sctx=sm.getContext('2d',{willReadFrequently:true});
+function sharp(v){
+  const w=v.videoWidth,h=v.videoHeight;
+  sctx.drawImage(v,w*.2,h*.25,w*.6,h*.5,0,0,320,180);
+  const d=sctx.getImageData(0,0,320,180).data;let s=0,n=0;
+  for(let y=1;y<179;y++)for(let x=1;x<319;x++){
+    const i=(y*320+x)*4+1,l=4*d[i]-d[i-4]-d[i+4]-d[i-1280]-d[i+1280];s+=l*l;n++;
+  }
+  return s/n;
+}
+function snap(v){
+  const s=Math.min(1,960/v.videoWidth),c=mk(Math.round(v.videoWidth*s),Math.round(v.videoHeight*s));
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c;
+}
+function put(i,c){
+  if(i<0||i>=N||frames[i])return;
   frames[i]=c;count++;lastProg=Date.now();
   $('ticks').children[i].classList.add('on');
   $('flash').style.opacity=.35;setTimeout(()=>$('flash').style.opacity=0,80);
   if(navigator.vibrate)navigator.vibrate(12);
-  if(count>=N)finish();
+  if(count>=N&&capturing)finish();
 }
+function grab(i){if(i>=0&&!frames[i])put(i,snap($('vid')))} // mode sans capteur
+// Mode capteur : pendant chaque tranche de 10°, on garde l'image la plus nette
+let cand=null,lastCommit=-1,tPrev=0;
+function commit(){
+  for(let i=lastCommit+1;i<=cand.idx;i++)put(i,cand.canvas);
+  lastCommit=Math.max(lastCommit,cand.idx);
+}
+function track(idx){
+  const now=performance.now();
+  if(now-tPrev<90&&cand&&idx===cand.idx)return;
+  tPrev=now;
+  const v=$('vid'),sc=sharp(v);
+  if(!cand||idx!==cand.idx){
+    if(cand)commit();
+    if(idx>=N){if(capturing)finish();return}
+    cand={idx,score:-1,canvas:null};
+  }
+  if(sc>cand.score){cand.score=sc;cand.canvas=snap(v)}
+}
+const checkRot=()=>{$('rot').hidden=!(!$('cap').hidden&&!capturing&&innerHeight>innerWidth)};
+addEventListener('resize',checkRot);
 // Direction visée par la caméra arrière, fiable même téléphone à la verticale
 function heading(e){
   if(e.webkitCompassHeading!=null)return e.webkitCompassHeading;
@@ -185,7 +223,7 @@ function onOri(e){
   if(!dir&&Math.abs(acc)>4)dir=Math.sign(acc);
   const p=dir?acc*dir:0,idx=Math.floor(p/STEP);
   $('pct').textContent='Tour : '+Math.max(0,Math.min(100,Math.round(p/360*100)))+' %';
-  for(let i=0;i<=Math.min(idx,N-1);i++)grab(i);
+  track(Math.max(0,Math.floor(p/STEP)));
   const walk=dir?(dir<0?'▶▶':'◀◀'):'◀ ▶',stalled=Date.now()-lastProg>3500;
   if(pitchErr)guide('bad',pitchV>0?'⬆':'⬇','Téléphone à la verticale');
   else if(rollErr)guide('bad',rollV>0?'↻':'↺','Redresse le téléphone');
@@ -219,6 +257,22 @@ stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){pos-=1;auto=false}i
   }
   requestAnimationFrame(loop);
 })();
+$('save').onclick=async()=>{
+  const b=$('save');b.textContent='Préparation…';
+  const U=frames2.map(c=>c.toDataURL('image/jpeg',.78));
+  const js='const U='+JSON.stringify(U)+';let I=[],pos=0,cur=-1,v=0,d=0,x0=0,a=1;const c=document.getElementById("c"),g=c.getContext("2d");'
+   +'Promise.all(U.map(u=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=u}))).then(m=>{I=m;c.width=m[0].width;c.height=m[0].height;'
+   +'c.onpointerdown=e=>{d=1;a=0;x0=e.clientX;c.setPointerCapture(e.pointerId)};'
+   +'c.onpointermove=e=>{if(!d)return;const s=(e.clientX-x0)*I.length/(c.clientWidth*1.1);x0=e.clientX;pos+=s;v=s};'
+   +'c.onpointerup=()=>d=0;'
+   +'(function L(){if(!d){if(a)pos+=.05;else{pos+=v;v*=.94}}const n=I.length,i=((Math.round(pos)%n)+n)%n;if(i!==cur){cur=i;g.drawImage(I[i],0,0)}requestAnimationFrame(L)})()});';
+  const html='<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visite 360°</title>'
+   +'<style>html,body{margin:0;height:100%;background:#111}body{display:grid;place-items:center}canvas{width:100%;max-height:100%;object-fit:contain;touch-action:pan-y}</style></head><body><canvas id="c"></canvas><script>'+js+'<\/script></body></html>';
+  const blob=new Blob([html],{type:'text/html'}),file=new File([blob],'visite-360.html',{type:'text/html'});
+  b.textContent='Enregistrer la visite';
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Visite 360°'});return}catch(e){}}
+  const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='visite-360.html';l.click();
+};
 $('again').onclick=()=>{$('res').hidden=true;$('start').hidden=false};
 </script>
 </body>
