@@ -22,10 +22,17 @@ button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
 /* capture */
 #cap{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden}
 #vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.frame{position:absolute;left:8%;right:8%;top:30%;bottom:34%;border:2px dashed rgba(255,255,255,.75);border-radius:16px}
+.frame{position:absolute;left:8%;right:8%;top:36%;bottom:30%;border:2px dashed rgba(255,255,255,.75);border-radius:16px}
+.frame.ok{border-color:#4ade80;border-style:solid}.frame.warn{border-color:#ffb020;border-style:solid}.frame.bad{border-color:#ff5a5a;border-style:solid}
+.arrow{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 66px);text-align:center;font-size:52px;line-height:1;text-shadow:0 2px 8px #000;pointer-events:none}
+.arrow.ok{color:#4ade80}.arrow.warn{color:#ffb020}.arrow.bad{color:#ff5a5a}
+.arrow.blink{animation:bl .9s ease-in-out infinite}
+@keyframes bl{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.arrow.blink{animation:none}}
 .hz{position:absolute;left:10%;right:10%;top:50%;height:3px;border-radius:2px;background:#ff6b6b;transition:background .2s}
 .hz.ok{background:#5cc3d6}
 .msg{position:absolute;left:16px;right:70px;top:calc(env(safe-area-inset-top,0px) + 14px);background:rgba(0,0,0,.6);padding:10px 14px;border-radius:12px;font-weight:600}
+.pct{position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 102px);font-weight:700;text-shadow:0 1px 4px #000}
 .ticks{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);display:flex;gap:2px}
 .ticks i{flex:1;height:8px;background:rgba(255,255,255,.3);border-radius:2px}
 .ticks i.on{background:#5cc3d6}
@@ -53,9 +60,11 @@ canvas{display:block;width:100%;height:auto}
 
 <div id="cap" hidden>
   <video id="vid" playsinline muted autoplay></video>
-  <div class="frame"></div><div class="hz" id="hz"></div>
+  <div class="frame" id="frame"></div><div class="hz" id="hz"></div>
+  <div class="arrow" id="arrow"></div>
   <div class="msg" id="msg">Cadre le véhicule en entier</div>
   <button id="stop">Annuler</button>
+  <div class="pct" id="pct"></div>
   <div class="ticks" id="ticks"></div>
   <button class="main" id="go">Démarrer le tour</button>
   <div id="flash"></div>
@@ -72,9 +81,17 @@ canvas{display:block;width:100%;height:auto}
 const $=id=>document.getElementById(id);
 const N=36,STEP=360/N;
 let stream=null,frames=[],count=0,acc=0,prevH=null,prevT=0,dir=0,capturing=false,gotOri=false;
-let lastProg=0,timer=null,pitchErr=false,rollErr=false,rate=0,frames2=[];
+let lastProg=0,timer=null,pitchErr=false,rollErr=false,rate=0,frames2=[],pitchV=0,rollV=0,lastSt='';
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const say=t=>{$('msg').textContent=t};
+// Guidage : couleur du cadre, flèche qui clignote, message court, vibration si problème
+function guide(st,glyph,text){
+  $('frame').className='frame '+st;
+  const a=$('arrow');a.textContent=glyph;a.className='arrow '+st+(glyph?' blink':'');
+  say(text);
+  if(st!==lastSt&&(st==='warn'||st==='bad')&&navigator.vibrate)navigator.vibrate(st==='bad'?[60,40,60]:40);
+  lastSt=st;
+}
 
 /* ---------- Démarrage ---------- */
 $('begin').onclick=async()=>{
@@ -82,6 +99,8 @@ $('begin').onclick=async()=>{
   try{
     if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function')
       await DeviceOrientationEvent.requestPermission();
+    if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')
+      await DeviceMotionEvent.requestPermission();
   }catch(e){}
   try{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280}},audio:false});
@@ -96,14 +115,16 @@ $('begin').onclick=async()=>{
 function prepare(){
   frames=Array(N).fill(null);count=0;acc=0;prevH=null;dir=0;capturing=false;gotOri=false;
   $('ticks').innerHTML='<i></i>'.repeat(N);
-  $('go').hidden=false;say('Cadre le véhicule en entier');
+  $('go').hidden=false;guide('','','Cadre le véhicule en entier');
   const ev='ondeviceorientationabsolute' in window?'deviceorientationabsolute':'deviceorientation';
   window.addEventListener(ev,onOri);window._ev=ev;
+  window.addEventListener('devicemotion',onMotion);
 }
 $('stop').onclick=()=>cleanup(true);
 function cleanup(back){
   capturing=false;clearInterval(timer);
   window.removeEventListener(window._ev,onOri);
+  window.removeEventListener('devicemotion',onMotion);
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
   if(back){$('cap').hidden=true;$('start').hidden=false}
 }
@@ -111,16 +132,13 @@ function cleanup(back){
 /* ---------- Le tour ---------- */
 $('go').onclick=()=>{
   $('go').hidden=true;capturing=true;prevH=null;acc=0;dir=0;lastProg=Date.now();
-  grab(0);say('C\u2019est parti, marche lentement autour du véhicule');
+  grab(0);guide('ok','◀ ▶','C\u2019est parti, marche lentement autour du véhicule');
   setTimeout(()=>{ // pas de capteur : une image toutes les 1,2 s
     if(capturing&&!gotOri){
       say('Capteurs indisponibles : une image toutes les 1,2 s. Marche régulièrement.');
       timer=setInterval(()=>{if(count>=N)return finish();const i=frames.findIndex(f=>!f);grab(i)},1200);
     }
   },1800);
-  setInterval(()=>{
-    if(capturing&&gotOri&&Date.now()-lastProg>3500)say('Continue à tourner autour du véhicule');
-  },800);
 };
 function grab(i){
   if(i<0||frames[i])return;
@@ -132,16 +150,32 @@ function grab(i){
   if(navigator.vibrate)navigator.vibrate(12);
   if(count>=N)finish();
 }
+// Direction visée par la caméra arrière, fiable même téléphone à la verticale
+function heading(e){
+  if(e.webkitCompassHeading!=null)return e.webkitCompassHeading;
+  if(e.alpha==null||e.beta==null||e.gamma==null)return null;
+  const r=Math.PI/180,a=e.alpha*r,b=e.beta*r,g=e.gamma*r;
+  const rA=-Math.cos(a)*Math.sin(g)-Math.sin(a)*Math.sin(b)*Math.cos(g);
+  const rB=-Math.sin(a)*Math.sin(g)+Math.cos(a)*Math.sin(b)*Math.cos(g);
+  let h=Math.atan(rA/rB);
+  if(rB<0)h+=Math.PI;else if(rA<0)h+=2*Math.PI;
+  return h/r;
+}
+// Aplomb et horizon avec la gravité
+function onMotion(e){
+  const g=e.accelerationIncludingGravity;if(!g||g.x==null)return;
+  const s=/iPhone|iPad/.test(navigator.userAgent)?-1:1,x=g.x*s,y=g.y*s,z=g.z*s;
+  const ang=screen.orientation?screen.orientation.angle:(window.orientation||0),land=Math.abs(ang)===90;
+  const roll=(land?Math.atan2(y,Math.abs(x))*(ang===270||ang===-90?-1:1):Math.atan2(x,y))*180/Math.PI;
+  const pitch=Math.atan2(z,Math.hypot(x,y))*180/Math.PI;
+  rollErr=Math.abs(roll)>10;pitchErr=Math.abs(pitch)>22;pitchV=pitch;rollV=roll;
+  $('hz').style.transform='rotate('+roll+'deg)';
+  $('hz').classList.toggle('ok',!rollErr);
+}
 function onOri(e){
-  const h=e.webkitCompassHeading!=null?e.webkitCompassHeading:(e.alpha==null?null:360-e.alpha);
+  const h=heading(e);
   if(h==null)return;
   gotOri=true;
-  // horizon et aplomb
-  const land=Math.abs(screen.orientation?screen.orientation.angle:window.orientation||0)===90;
-  const roll=land?(e.beta||0):(e.gamma||0),pitch=land?(Math.abs(e.gamma||0)-90):((e.beta||0)-90);
-  rollErr=Math.abs(roll)>8;pitchErr=Math.abs(pitch)>18;
-  $('hz').style.transform='rotate('+(-roll)+'deg)';
-  $('hz').classList.toggle('ok',!rollErr);
   if(!capturing)return;
   const now=performance.now();
   if(prevH==null){prevH=h;prevT=now;return}
@@ -150,11 +184,15 @@ function onOri(e){
   acc+=d;
   if(!dir&&Math.abs(acc)>4)dir=Math.sign(acc);
   const p=dir?acc*dir:0,idx=Math.floor(p/STEP);
+  $('pct').textContent='Tour : '+Math.max(0,Math.min(100,Math.round(p/360*100)))+' %';
   for(let i=0;i<=Math.min(idx,N-1);i++)grab(i);
-  if(rollErr||pitchErr)say('Tiens le téléphone droit, à hauteur de poitrine');
-  else if(rate>45)say('Plus lentement');
-  else if(dir&&p<-15)say('Tourne plutôt dans l\u2019autre sens');
-  else if(dir)say('Bien. Il reste '+Math.max(0,Math.round(100-p/360*100))+' % du tour');
+  const walk=dir?(dir<0?'▶▶':'◀◀'):'◀ ▶',stalled=Date.now()-lastProg>3500;
+  if(pitchErr)guide('bad',pitchV>0?'⬆':'⬇','Téléphone à la verticale');
+  else if(rollErr)guide('bad',rollV>0?'↻':'↺','Redresse le téléphone');
+  else if(rate>45)guide('warn','⏸','Plus lentement');
+  else if(dir&&p<-15)guide('warn',walk,'Tourne dans l\u2019autre sens');
+  else if(stalled)guide('warn',walk,'Continue à tourner');
+  else guide('ok',walk,'Bien, continue');
 }
 function finish(){
   if(!capturing&&!timer&&count<N)return;

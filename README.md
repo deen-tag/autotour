@@ -165,7 +165,7 @@ Une application mobile n'est probablement pas nécessaire au départ : une page 
 | Fichier | Rôle | État |
 |---|---|---|
 | `visite-360.html` | Visualiseur de spin : véhicule fictif de démonstration, import d'une vidéo (36 images extraites) ou de photos | Fonctionne. La démo est volontairement basique, le vrai test se fait avec une vidéo réelle. |
-| `capture-guidee.html` | Capture guidée : caméra arrière, cadre, ligne d'horizon, image prise tous les 10° d'après les capteurs de rotation, consignes en direct, puis visualiseur du résultat | Non testé sur un vrai véhicule. |
+| `capture-guidee.html` | Capture guidée : caméra arrière, cadre, ligne d'horizon, image prise tous les 10° d'après les capteurs de rotation, puis visualiseur du résultat. Guidage par **flèches qui clignotent** (sens de marche, ralentir, redresser, relever ou baisser le téléphone), cadre vert / orange / rouge, vibrations, pourcentage du tour | En test sur un vrai téléphone. Une première version, avec messages seuls, s'est avérée peu lisible. |
 
 Ces fichiers servent à valider le rendu et la capture. Ils peuvent rester en HTML tant que le concept n'est pas validé, puis être repris dans le futur projet.
 
@@ -245,7 +245,8 @@ Les phases 0 et 1 permettent de vérifier l'intérêt réel **avant** d'investir
 - À venir : test sur un vrai véhicule, puis décision sur le rendu (spin simple, défauts cliquables, vraie 3D).
 
 ### Ce que les prototypes ne font pas encore
-- Consigne « trop près, recule » (détection du véhicule à l'écran).
+- Flèches **avance / recule** et **décale à gauche / à droite** : elles demandent de reconnaître le véhicule dans l'image (sa taille à l'écran indique la distance). Un petit modèle de détection dans le navigateur est une piste, à mesurer côté poids de chargement.
+- Guidage vocal (« ralentis », « continue ») pour ne pas avoir à regarder l'écran.
 - Photo 360° de l'intérieur avec points cliquables.
 - Floutage de plaque, points sur les défauts, lien de partage, comptes, paiement.
 
