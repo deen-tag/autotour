@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AutoTour — La visite 360° de ta voiture, faite avec ton téléphone</title>
+<meta name="description" content="Filme un tour de ton véhicule avec ton téléphone. AutoTour garde les défauts visibles et produit une visite à partager dans ton annonce.">
+<style>
+:root{--bg:#eef0f2;--fg:#15181b;--mut:#5b6670;--line:#cfd5da;--acc:#0f6b7c;--accfg:#fff;--flag:#b5690e;--flagbg:#f8ecdb;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c;--flag:#ffb020;--flagbg:#2a2110}}
+:root[data-theme="dark"]{--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c;--flag:#ffb020;--flagbg:#2a2110}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif}
+a{color:var(--acc)}
+.wrap{max-width:960px;margin:0 auto;padding:0 20px}
+nav.top{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;max-width:960px;margin:0 auto}
+.word{font-weight:800;font-size:1.15rem;letter-spacing:-.02em}
+nav.top a{font-weight:600;text-decoration:none;font-size:.95rem}
+
+.hero{padding:8px 20px 40px;max-width:960px;margin:0 auto;display:grid;gap:32px;grid-template-columns:1fr;align-items:center}
+@media (min-width:760px){.hero{grid-template-columns:1.1fr .9fr;padding-top:24px}}
+.hero h1{margin:0 0 14px;font-size:clamp(1.9rem,5vw,2.7rem);line-height:1.12;letter-spacing:-.02em;font-weight:800}
+.hero p.lede{margin:0 0 24px;color:var(--mut);font-size:1.08rem;max-width:46ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+button,.btn{font:inherit;font-weight:700;border-radius:11px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);text-decoration:none;display:inline-block}
+.btn.main,button.main{background:var(--acc);color:var(--accfg)}
+.btn.ghost{border-color:var(--line);color:var(--mut);font-weight:600}
+button:focus-visible,.btn:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
+
+.stage-wrap{position:relative}
+.stage{position:relative;background:linear-gradient(180deg,#dfe4e8,#a3adb4);border-radius:16px;overflow:hidden;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;aspect-ratio:16/10}
+.stage:active{cursor:grabbing}
+.stage canvas{display:block;width:100%;height:100%}
+.stage-cap{margin:10px 2px 0;color:var(--mut);font-size:.85rem}
+
+section{padding:44px 20px}
+.section-inner{max-width:960px;margin:0 auto}
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:0 0 10px}
+.steps{display:grid;gap:22px;margin-top:24px}
+@media (min-width:640px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{display:flex;gap:14px;align-items:flex-start}
+.step .n{flex:none;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-weight:800;font-size:.95rem}
+.step h3{margin:2px 0 4px;font-size:1.05rem}
+.step p{margin:0;color:var(--mut);font-size:.95rem}
+
+.trust{display:grid;gap:28px;align-items:center;margin-top:8px}
+@media (min-width:700px){.trust{grid-template-columns:1fr 1fr}}
+.trust p{color:var(--mut);max-width:52ch}
+.car-svg{width:100%;max-width:420px;height:auto}
+.flag-dot{fill:var(--flag)}
+.flag-ring{fill:none;stroke:var(--flag);stroke-width:2;opacity:.55}
+
+.status{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.status ul{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:12px}
+.status li{display:flex;gap:10px;color:var(--mut)}
+.status li b{color:var(--fg);font-weight:700}
+.dot{flex:none;width:9px;height:9px;border-radius:50%;margin-top:7px}
+.dot.live{background:var(--acc)}
+.dot.test{background:var(--flag)}
+
+form.signup{margin-top:22px;display:grid;gap:12px;max-width:440px}
+form.signup .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{font-size:.85rem;color:var(--mut);display:block;margin-bottom:5px}
+input,select{font:inherit;width:100%;padding:11px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--bg);color:var(--fg)}
+input:focus-visible,select:focus-visible{outline:3px solid var(--acc);outline-offset:1px}
+#signupNote{font-size:.85rem;color:var(--mut);margin-top:10px}
+
+footer{padding:28px 20px 40px;color:var(--mut);font-size:.85rem;text-align:center}
+</style>
+</head>
+<body>
+
+<nav class="top">
+  <span class="word">AutoTour</span>
+  <a href="#comment">Comment ça marche</a>
+</nav>
+
+<div class="hero">
+  <div>
+    <h1>La visite 360° de ta voiture, faite avec ton téléphone.</h1>
+    <p class="lede">Un tour complet en quelques minutes, sans matériel ni compétence technique, pour une annonce qui inspire confiance — à petit prix.</p>
+    <div class="cta-row">
+      <a class="btn main" href="capture-guidee.html">Essayer sur mon véhicule</a>
+      <a class="btn ghost" href="#etat">Voir où on en est</a>
+    </div>
+  </div>
+  <div class="stage-wrap">
+    <div class="stage" id="stage" tabindex="0" aria-label="Véhicule de démonstration à faire tourner. Flèches gauche et droite pour tourner."><canvas id="cv"></canvas></div>
+    <p class="stage-cap">Glisse pour tourner — démonstration animée, pas une vraie capture.</p>
+  </div>
+</div>
+
+<section id="comment">
+  <div class="section-inner">
+    <h2>Comment ça marche</h2>
+    <div class="steps">
+      <div class="step"><span class="n">1</span><div><h3>Tu filmes un tour du véhicule</h3><p>L'appli guide le geste avec des flèches et un cadre, directement dans le navigateur du téléphone.</p></div></div>
+      <div class="step"><span class="n">2</span><div><h3>Elle garde l'essentiel</h3><p>L'image la plus nette à chaque angle, traitée sur le téléphone. Pas besoin d'envoyer une vidéo entière.</p></div></div>
+      <div class="step"><span class="n">3</span><div><h3>Tu obtiens une visite à partager</h3><p>Un fichier prêt à joindre à l'annonce, envoyer par message, ou déposer sur un site.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="section-inner trust">
+    <div>
+      <h2>Montrer la voiture telle qu'elle est.</h2>
+      <p>On ne gomme rien. Une rayure, une jante marquée, l'usure d'un volant restent visibles dans la visite. Ce que l'acheteur regarde, c'est la vraie voiture — pas une image retouchée.</p>
+    </div>
+    <svg class="car-svg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 130 Q40 90 90 88 L130 60 Q160 46 200 46 L260 60 Q300 66 330 88 Q365 90 365 122 Q365 138 348 138 L58 138 Q40 138 40 130 Z" fill="none" stroke="var(--mut)" stroke-width="3"/>
+      <circle cx="110" cy="140" r="20" fill="none" stroke="var(--mut)" stroke-width="3"/>
+      <circle cx="300" cy="140" r="20" fill="none" stroke="var(--mut)" stroke-width="3"/>
+      <circle class="flag-dot" cx="150" cy="95" r="4"/><circle class="flag-ring" cx="150" cy="95" r="10"/>
+      <circle class="flag-dot" cx="300" cy="118" r="4"/><circle class="flag-ring" cx="300" cy="118" r="10"/>
+    </svg>
+  </div>
+</section>
+
+<section id="etat" class="status">
+  <div class="section-inner">
+    <h2>Le stade actuel</h2>
+    <ul>
+      <li><span class="dot live"></span><span><b>Le spin 360°</b> fonctionne déjà — teste-le sur ta propre voiture avec le bouton ci-dessus.</span></li>
+      <li><span class="dot test"></span><span><b>La vraie 3D</b> (tourner librement autour de la voiture, pas juste des photos qui défilent) est en test technique, pas encore prête pour un usage réel.</span></li>
+    </ul>
+  </div>
+</section>
+
+<section id="prevenir">
+  <div class="section-inner">
+    <h2>Être prévenu quand ce sera disponible</h2>
+    <p style="color:var(--mut);margin:0;max-width:52ch">Laisse quelques infos, ça ouvre un e-mail déjà prérempli — aucune inscription en ligne pour l'instant.</p>
+    <form class="signup" id="signup">
+      <div class="row2">
+        <div><label for="prenom">Prénom</label><input id="prenom" required></div>
+        <div><label for="profil">Profil</label>
+          <select id="profil">
+            <option>Particulier</option>
+            <option>Garage</option>
+            <option>Concession</option>
+          </select>
+        </div>
+      </div>
+      <div><label for="ville">Ville / région (optionnel)</label><input id="ville"></div>
+      <div><button class="main" type="submit">M'inscrire par e-mail</button></div>
+    </form>
+    <p id="signupNote" hidden></p>
+  </div>
+</section>
+
+<footer>AutoTour — projet en cours de test.</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+
+/* ---------- Démonstration : petit moteur 3D procédural (voiture fictive) ---------- */
+const M=[],paint=[22,98,116],glass=[34,48,58];
+const face=(v,n,c,l=0)=>M.push({v,n,c,l});
+function box(x0,x1,y0,y1,z0,z1,c){
+  face([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1]],[1,0,0],c);
+  face([[x0,y0,z0],[x0,y1,z0],[x0,y1,z1],[x0,y0,z1]],[-1,0,0],c);
+  face([[x0,y1,z0],[x1,y1,z0],[x1,y1,z1],[x0,y1,z1]],[0,1,0],c);
+  face([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]],[0,0,1],c);
+  face([[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0]],[0,0,-1],c);
+}
+const circ=(cx,cy,z,r,n)=>Array.from({length:n},(_,k)=>[cx+r*Math.cos(k/n*6.2832),cy+r*Math.sin(k/n*6.2832),z]);
+box(-2.2,2.2,.32,.95,-.9,.9,paint);
+const P=[[-1.3,.95],[-.85,1.45],[.6,1.45],[1.15,.95]];
+[-1,1].forEach(s=>face(P.map(p=>[p[0],p[1],s*.78]),[0,0,s],glass));
+face([[-.85,1.45,-.78],[.6,1.45,-.78],[.6,1.45,.78],[-.85,1.45,.78]],[0,1,0],paint);
+face([[.6,1.45,-.78],[1.15,.95,-.78],[1.15,.95,.78],[.6,1.45,.78]],[.67,.74,0],glass);
+face([[-.85,1.45,-.78],[-1.3,.95,-.78],[-1.3,.95,.78],[-.85,1.45,.78]],[-.74,.67,0],glass);
+[-1,1].forEach(s=>[-1.4,1.4].forEach(x=>{
+  face(circ(x,.36,s*.93,.36,18),[0,0,s],[18,18,20],1);
+  face(circ(x,.36,s*.94,.2,10),[0,0,s],[160,166,172],2);
+  face([[2.21,.62,s*.45],[2.21,.78,s*.45],[2.21,.78,s*.8],[2.21,.62,s*.8]],[1,0,0],[255,240,190],1);
+  face([[-2.21,.62,s*.45],[-2.21,.78,s*.45],[-2.21,.78,s*.8],[-2.21,.62,s*.8]],[-1,0,0],[200,30,40],1);
+}));
+function render(g,W,H,a){
+  const ca=Math.cos(a),sa=Math.sin(a),cp=Math.cos(.22),sp=Math.sin(.22),D=9.5,F=W*1.64;
+  const T=p=>{const x=p[0]*ca+p[2]*sa,z=-p[0]*sa+p[2]*ca,y=p[1]-.7;return[x,y*cp+z*sp,-y*sp+z*cp]};
+  const R=n=>{const x=n[0]*ca+n[2]*sa,z=-n[0]*sa+n[2]*ca;return[x,n[1]*cp+z*sp,-n[1]*sp+z*cp]};
+  const J=q=>{const d=q[2]+D;return[W/2+F*q[0]/d,H*.62-F*q[1]/d]};
+  const out=[];
+  for(const f of M){
+    const n=R(f.n);if(n[2]>=0)continue;
+    const q=f.v.map(T),z=q.reduce((s,p)=>s+p[2],0)/q.length;
+    const b=.42+.58*Math.max(0,-.35*n[0]+.7*n[1]-.6*n[2]);
+    out.push({q,z,l:f.l,c:'rgb('+f.c.map(v=>v*b|0)+')'});
+  }
+  out.sort((x,y)=>x.l-y.l||y.z-x.z);
+  for(const o of out){
+    g.beginPath();
+    o.q.forEach((p,i)=>{const s=J(p);i?g.lineTo(s[0],s[1]):g.moveTo(s[0],s[1])});
+    g.closePath();g.fillStyle=o.c;g.strokeStyle=o.c;g.lineWidth=.7;g.fill();g.stroke();
+  }
+}
+const cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage');
+let pos=0,cur=-1,vel=0,drag=false,lastX=0;
+let auto=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+function resize(){const r=stage.getBoundingClientRect();cv.width=Math.round(r.width);cv.height=Math.round(r.height)}
+addEventListener('resize',resize);resize();
+stage.addEventListener('pointerdown',e=>{drag=true;auto=false;lastX=e.clientX;vel=0;stage.setPointerCapture(e.pointerId)});
+stage.addEventListener('pointermove',e=>{if(!drag)return;const d=(e.clientX-lastX)/60;lastX=e.clientX;pos+=d;vel=d});
+stage.addEventListener('pointerup',()=>drag=false);stage.addEventListener('pointercancel',()=>drag=false);
+stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){pos-=.2;auto=false}if(e.key==='ArrowRight'){pos+=.2;auto=false}});
+(function loop(){
+  if(!drag){if(auto)pos+=.006;else{pos+=vel;vel*=.94;if(Math.abs(vel)<.0005)vel=0}}
+  if(cv.width)render(ctx,cv.width,cv.height,pos);
+  requestAnimationFrame(loop);
+})();
+
+/* ---------- Formulaire d'intérêt : compose un e-mail, aucun backend ---------- */
+$('signup').addEventListener('submit',e=>{
+  e.preventDefault();
+  const prenom=$('prenom').value.trim(),profil=$('profil').value,ville=$('ville').value.trim();
+  const subject='AutoTour — être prévenu(e) du lancement';
+  const body='Prénom : '+prenom+'\nProfil : '+profil+(ville?'\nVille/région : '+ville:'')+'\n';
+  location.href='mailto:rhalissmonfils@gmail.com?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);
+  const note=$('signupNote');note.hidden=false;note.textContent='Ton application mail devrait s\u2019ouvrir avec le message prérempli — il ne reste qu\u2019à l\u2019envoyer.';
+});
+</script>
+</body>
+</html>
