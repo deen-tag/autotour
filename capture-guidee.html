@@ -78,7 +78,9 @@ canvas{display:block;width:100%;height:auto}
   <p class="mut">Glisse le doigt pour tourner autour du véhicule.</p>
   <div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas></div>
   <button class="main" id="save">Enregistrer la visite</button>
+  <button id="export3d">Exporter (test 3D)</button>
   <button id="again">Refaire un tour</button>
+  <p class="mut" id="exportInfo" style="font-size:.9rem;margin-top:8px"></p>
 </div>
 
 <script>
@@ -274,6 +276,50 @@ $('save').onclick=async()=>{
   const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='visite-360.html';l.click();
 };
 $('again').onclick=()=>{$('res').hidden=true;$('start').hidden=false};
+
+/* ---------- Export du jeu de données pour reconstruction 3D (COLMAP + gsplat) ---------- */
+// Important : on exporte depuis `frames` (les vraies captures), pas `frames2`
+// (qui duplique la dernière image connue dans les tranches manquées). Envoyer
+// des doublons à COLMAP ne l'aide pas et peut fausser la reconstruction.
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('Chargement de '+src+' impossible (pas de connexion ?)'));
+    document.head.appendChild(s);
+  });
+}
+$('export3d').onclick=async()=>{
+  const b=$('export3d'),info=$('exportInfo');
+  b.disabled=true;b.textContent='Préparation…';info.textContent='';
+  try{
+    if(!window.JSZip)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    const zip=new JSZip(),imgs=zip.folder('images'),meta=[];
+    let real=0;
+    frames.forEach((f,i)=>{
+      if(!f)return;
+      real++;
+      const name='frame_'+String(i).padStart(3,'0')+'.jpg';
+      imgs.file(name,f.toDataURL('image/jpeg',.92).split(',')[1],{base64:true});
+      // angle_deg : estimation basée sur la rotation mesurée par les capteurs
+      // (tranche de 10°), PAS une pose caméra complète (pas de rayon, hauteur, tangage).
+      meta.push({file:'images/'+name,index:i,angle_deg:+(i*STEP).toFixed(1)});
+    });
+    zip.file('metadata.json',JSON.stringify({
+      project:'autotour',exported_at:new Date().toISOString(),
+      total_slots:N,step_deg:STEP,captured_frames:real,
+      note:'angle_deg est une estimation de rotation relative (capteurs), pas une pose caméra complète. Les tranches manquantes ne sont pas incluses (voir captured_frames vs total_slots).',
+      frames:meta
+    },null,2));
+    info.textContent=real+' images sur '+N+' incluses dans l\u2019export.';
+    const blob=await zip.generateAsync({type:'blob'});
+    const file=new File([blob],'autotour-capture.zip',{type:'application/zip'});
+    b.textContent='Exporter (test 3D)';b.disabled=false;
+    if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Capture AutoTour (données brutes)'});return}catch(e){}}
+    const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='autotour-capture.zip';l.click();
+  }catch(e){
+    b.textContent='Exporter (test 3D)';b.disabled=false;
+    info.textContent='Export impossible : '+e.message;
+  }
+};
 </script>
 </body>
 </html>

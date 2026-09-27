@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AutoTour — Vue 3D</title>
+<style>
+:root{--bg:#eef0f2;--fg:#15181b;--mut:#5b6670;--line:#cfd5da;--acc:#0f6b7c;--accfg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}}
+:root[data-theme="dark"]{--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
+[hidden]{display:none!important}
+.page{max-width:560px;margin:0 auto;padding:24px 16px 32px}
+h1{margin:0 0 8px;font-size:1.6rem;letter-spacing:-.02em}
+p{margin:0 0 12px}.mut{color:var(--mut)}
+button,label.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 18px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);display:inline-block}
+button.main,label.btn.main{background:var(--acc);color:var(--accfg)}
+input[type=file]{display:none}
+#drop{border:2px dashed var(--line);border-radius:16px;padding:32px 16px;text-align:center;margin:16px 0}
+#stage{position:fixed;inset:0;background:#0c0e10;display:none}
+#stage.on{display:block}
+#stage canvas{display:block;width:100%;height:100%}
+#back{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2;color:#fff;border-color:rgba(255,255,255,.6);padding:8px 12px}
+#status{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);text-align:center;color:#fff;font-weight:600;text-shadow:0 1px 4px #000;pointer-events:none}
+#err{color:#c0392b;font-weight:600;margin-top:14px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+
+<div class="page" id="start">
+  <h1>AutoTour — Vue 3D</h1>
+  <p class="mut">Viewer de test : ouvre un modèle Gaussian Splatting (.ply) produit par le pipeline de reconstruction.</p>
+  <div id="drop">
+    <p>Choisis le fichier <code>.ply</code> exporté depuis le notebook de reconstruction.</p>
+    <label class="btn main" for="file">Choisir un fichier .ply</label>
+    <input type="file" id="file" accept=".ply,.splat,.ksplat">
+  </div>
+  <p class="mut" id="or" hidden>— ou —</p>
+  <p class="mut" id="urlInfo" hidden>Chargement depuis l'URL fournie (<code>?model=</code>)…</p>
+  <p id="err"></p>
+  <p class="mut">Rotation : glisser. Zoom : pincer ou molette. Aucune retouche n'est appliquée au modèle : ce que tu vois est exactement le résultat de la reconstruction.</p>
+</div>
+
+<div id="stage">
+  <button id="back">← Retour</button>
+  <div id="status"></div>
+</div>
+
+<!-- three.js (build compatible avec GaussianSplats3D) puis GaussianSplats3D (MIT) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.1/build/gaussian-splats-3d.umd.cjs"></script>
+<script>
+const $=id=>document.getElementById(id);
+let viewer=null;
+
+function showErr(msg){
+  $('err').textContent=msg;
+}
+
+async function openModel(url, revoke){
+  if(!window.THREE || !window.GaussianSplats3D){
+    showErr('Bibliothèques de rendu non chargées (pas de connexion ?). Réessaie avec une connexion internet active — ce viewer charge three.js et GaussianSplats3D depuis un CDN au premier lancement.');
+    return;
+  }
+  $('start').hidden=true;
+  $('stage').className='on';
+  $('status').textContent='Chargement du modèle…';
+  try{
+    viewer=new GaussianSplats3D.Viewer({
+      'cameraUp':[0,-1,0],
+      'initialCameraPosition':[0,-2,6],
+      'initialCameraLookAt':[0,0,0],
+      'sharedMemoryForWorkers':false
+    });
+    await viewer.addSplatScene(url,{
+      'splatAlphaRemovalThreshold':5,
+      'showLoadingUI':true,
+      'progressiveLoad':true
+    });
+    viewer.start();
+    $('status').textContent='';
+  }catch(e){
+    $('stage').className='';$('start').hidden=false;
+    showErr('Impossible de charger ce modèle : '+e.message+'\n\nVérifie que le fichier est bien un .ply produit par le pipeline (export « gaussian-splat » de nerfstudio), pas un maillage classique.');
+  }finally{
+    if(revoke)URL.revokeObjectURL(url);
+  }
+}
+
+$('file').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  showErr('');
+  const url=URL.createObjectURL(f);
+  openModel(url,true);
+};
+
+$('back').onclick=()=>location.reload();
+
+// Chargement direct via ?model=https://... (pratique une fois le fichier hébergé)
+(function(){
+  const p=new URLSearchParams(location.search).get('model');
+  if(p){
+    $('urlInfo').hidden=false;
+    openModel(p,false);
+  }
+})();
+</script>
+</body>
+</html>
