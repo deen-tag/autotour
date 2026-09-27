@@ -34,7 +34,7 @@ input[type=file]{display:none}
   <div id="drop">
     <p>Choisis le fichier <code>.ply</code> exporté depuis le notebook de reconstruction.</p>
     <label class="btn main" for="file">Choisir un fichier .ply</label>
-    <input type="file" id="file" accept=".ply,.splat,.ksplat">
+    <input type="file" id="file">
   </div>
   <p class="mut" id="or" hidden>— ou —</p>
   <p class="mut" id="urlInfo" hidden>Chargement depuis l'URL fournie (<code>?model=</code>)…</p>
@@ -91,6 +91,10 @@ async function openModel(url, revoke){
 $('file').onchange=e=>{
   const f=e.target.files[0];if(!f)return;
   showErr('');
+  if(!/\.(ply|splat|ksplat)$/i.test(f.name)){
+    showErr('« '+f.name+' » ne ressemble pas à un modèle 3D (.ply, .splat ou .ksplat). Vérifie que tu as bien choisi le fichier téléchargé depuis le notebook, pas une photo.');
+    e.target.value='';return;
+  }
   const url=URL.createObjectURL(f);
   openModel(url,true);
 };
