@@ -261,12 +261,34 @@ function onOri(e){
   else if(stalled)guide('warn',walk,'Continue à tourner');
   else guide('ok',walk,'Bien, continue');
 }
-function finish(){
+async function finish(){
   if(!capturing&&!timer&&count<N)return;
   cleanup(false);
-  let last=frames.find(f=>f);
-  frames2=frames.map(f=>f?(last=f):last);
+  if(dcand)commitDense();
   $('cap').hidden=true;$('res').hidden=false;
+  if(denseFrames.length>=20){
+    // Cas normal (capteurs OK) : le spin est construit à partir de la capture
+    // dense, comme la 3D. Décodage un par un (pas tout d'un coup) et
+    // réduction à 960px avant stockage : garder 120 images en pleine
+    // résolution (jusqu'à 1600px) en mémoire ferait planter beaucoup de
+    // téléphones.
+    $('save').disabled=true;$('export3d').disabled=true;$('save').textContent='Préparation…';
+    const sorted=denseFrames.slice().sort((a,b)=>a.index-b.index);
+    const out=[];
+    for(const f of sorted){
+      const im=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.src=URL.createObjectURL(f.blob)});
+      const s=Math.min(1,960/im.width),c=mk(Math.round(im.width*s),Math.round(im.height*s));
+      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+      out.push(c);URL.revokeObjectURL(im.src);
+    }
+    frames2=out;
+    $('save').disabled=false;$('export3d').disabled=false;$('save').textContent='Enregistrer le spin 360°';
+  }else{
+    // Repli : capteurs indisponibles ou capture dense trop pauvre, on garde
+    // l'ancien système à 36 images.
+    let last=frames.find(f=>f);
+    frames2=frames.map(f=>f?(last=f):last);
+  }
   const cv=$('cv');cv.width=frames2[0].width;cv.height=frames2[0].height;
   pos=0;cur=-1;vel=0;auto=true;
 }
@@ -275,13 +297,13 @@ function finish(){
 const cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage');
 let pos=0,cur=-1,vel=0,drag=false,last0=0,auto=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 stage.addEventListener('pointerdown',e=>{drag=true;auto=false;last0=e.clientX;vel=0;stage.setPointerCapture(e.pointerId)});
-stage.addEventListener('pointermove',e=>{if(!drag)return;const d=(e.clientX-last0)*N/(stage.clientWidth*1.1);last0=e.clientX;pos+=d;vel=d});
+stage.addEventListener('pointermove',e=>{if(!drag)return;const n=frames2.length||N;const d=(e.clientX-last0)*n/(stage.clientWidth*1.1);last0=e.clientX;pos+=d;vel=d});
 stage.addEventListener('pointerup',()=>drag=false);stage.addEventListener('pointercancel',()=>drag=false);
 stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){pos-=1;auto=false}if(e.key==='ArrowRight'){pos+=1;auto=false}});
 (function loop(){
   if(!drag){if(auto)pos+=.05;else{pos+=vel;vel*=.94;if(Math.abs(vel)<.005)vel=0}}
   if(frames2.length&&!$('res').hidden){
-    const i=((Math.round(pos)%N)+N)%N;
+    const n=frames2.length,i=((Math.round(pos)%n)+n)%n;
     if(i!==cur){cur=i;ctx.drawImage(frames2[i],0,0)}
   }
   requestAnimationFrame(loop);
