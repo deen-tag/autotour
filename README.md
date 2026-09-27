@@ -98,8 +98,9 @@ Ces pistes peuvent être combinées, testées puis abandonnées.
 - L'utilisateur perçoit une vidéo fluide, la technique dessous reste simple.
 
 ### Piste D : la vraie 3D (option « wow »)
-- Reconstruction à partir d'une vidéo avec un outil existant (Luma, Polycam, Scaniverse, Kiri Engine, ou Nerfstudio en open source).
-- À tester sur 2 ou 3 véhicules avant de décider : qualité des reflets, temps de calcul, coût par véhicule.
+- Décision prise : uniquement des briques open source qu'on héberge et contrôle nous-mêmes (COLMAP + gsplat/nerfstudio), pas de service tiers payant (Luma, Polycam, etc.), pour ne pas dépendre d'un fournisseur et garder la maîtrise du coût par véhicule.
+- Un premier pipeline de test existe (`autotour_reconstruction.ipynb`, calcul GPU loué temporairement) mais n'a pas encore été essayé sur une vraie voiture.
+- À tester : qualité des reflets, temps de calcul, coût par véhicule, et si 36 images sur un seul niveau de hauteur suffisent (sinon, revoir la capture avant d'aller plus loin).
 
 ### Idées complémentaires à garder sous la main
 - Détourage du fond en option payante (le fond d'origine est conservé au départ).
@@ -164,8 +165,11 @@ Une application mobile n'est probablement pas nécessaire au départ : une page 
 
 | Fichier | Rôle | État |
 |---|---|---|
+| `index.html` | Page d'accueil : présentation, démo animée (rendu 3D procédural, pas une vraie capture), lien vers la capture, section honnête sur l'état d'avancement, formulaire d'intérêt (ouvre un e-mail prérempli, sans backend) | En ligne. Pas encore testé sur un vrai téléphone (rendu, drag tactile). |
 | `visite-360.html` | Visualiseur de spin : véhicule fictif de démonstration, import d'une vidéo (36 images extraites) ou de photos | Fonctionne. La démo est volontairement basique, le vrai test se fait avec une vidéo réelle. |
-| `capture-guidee.html` | Capture guidée : caméra arrière (haute résolution demandée), cadre, ligne d'horizon, tour mesuré avec les capteurs, **image la plus nette gardée pour chaque tranche de 10°** (contre le flou de mouvement), rappel de passer en paysage, guidage par **flèches qui clignotent** (sens de marche, ralentir, redresser, relever ou baisser le téléphone), cadre vert / orange / rouge, vibrations, pourcentage du tour. Résultat à faire tourner au doigt, avec **enregistrement de la visite en fichier HTML autonome** (partageable, sans serveur) | Testé une première fois sur un vrai téléphone : le tour, les images et le rendu fonctionnent. Points constatés : flou de mouvement, véhicule petit dans l'image, format portrait. |
+| `capture-guidee.html` | Capture guidée : caméra arrière (haute résolution demandée), cadre, ligne d'horizon, tour mesuré avec les capteurs, **image la plus nette gardée pour chaque tranche de 10°** (contre le flou de mouvement), rappel de passer en paysage, guidage par **flèches qui clignotent** (sens de marche, ralentir, redresser, relever ou baisser le téléphone), cadre vert / orange / rouge, vibrations, pourcentage du tour. Résultat à faire tourner au doigt, avec deux exports **indépendants** : enregistrement du spin en fichier HTML autonome, ou export du jeu d'images brutes (+ métadonnées d'angle) pour la reconstruction 3D | Testé une première fois sur un vrai téléphone : le tour, les images et le rendu fonctionnent. Points constatés : flou de mouvement, véhicule petit dans l'image, format portrait. L'export 3D n'est pas encore testé sur un vrai véhicule. |
+| `viewer-3d.html` | Viewer de la vraie 3D (Gaussian Splatting) : charge un `.ply` produit par le pipeline de reconstruction, rotation/zoom via GaussianSplats3D (licence MIT) | Prêt, pas encore testé avec un `.ply` issu d'une vraie voiture. |
+| `autotour_reconstruction.ipynb` | Notebook Colab (GPU loué, pas de service tiers) : images de la capture → COLMAP (poses caméra, licence BSD) → entraînement Gaussian Splatting via `gsplat`/nerfstudio (licence Apache 2.0) → export `.ply` | POC écrit, pas encore exécuté sur une vraie capture. Doit répondre à la question de la section 3.2 : le rendu est-il fidèle, avec 36 images sur un seul niveau de hauteur ? |
 
 Ces fichiers servent à valider le rendu et la capture. Ils peuvent rester en HTML tant que le concept n'est pas validé, puis être repris dans le futur projet.
 
@@ -240,9 +244,9 @@ Les phases 0 et 1 permettent de vérifier l'intérêt réel **avant** d'investir
 
 ### État d'avancement
 
-- Fait : cadrage, comparaison de la concurrence, premiers prototypes (visualiseur et capture guidée).
-- En cours : mise en ligne en https (GitHub + Vercel) pour tester la caméra.
-- À venir : test sur un vrai véhicule, puis décision sur le rendu (spin simple, défauts cliquables, vraie 3D).
+- Fait : cadrage, comparaison de la concurrence, premiers prototypes (visualiseur, capture guidée, page d'accueil), premier pipeline de reconstruction 3D open source écrit (COLMAP + gsplat/nerfstudio) avec viewer associé.
+- En cours : test du pipeline 3D sur une vraie voiture (capture → export → Colab → `.ply` → viewer), pour savoir si la capture actuelle suffit.
+- À venir : selon le résultat du test 3D, soit revoir le pattern de capture (plus d'images, plusieurs hauteurs), soit avancer sur l'architecture finale (comptes, lien permanent, paiement).
 
 ### Ce que les prototypes ne font pas encore
 - Vrai **lien de partage** : pour l'instant la visite s'enregistre en fichier HTML autonome. Un lien web demande un stockage des images (piste : Supabase) et un compte à créer.
@@ -282,11 +286,11 @@ Les phases 0 et 1 permettent de vérifier l'intérêt réel **avant** d'investir
 1. Créer le dépôt GitHub et le projet Vercel, y mettre `capture-guidee.html`.
 2. Tester la capture guidée en https sur un vrai véhicule, puis passer la vidéo dans `visite-360.html`.
 3. Noter ce qui fonctionne ou non (fluidité, sens de rotation, images sautées, reflets).
-4. Tester la piste B (défauts cliquables) et, en parallèle, la piste D (vraie 3D) sur ce même véhicule.
+4. Tester la piste B (défauts cliquables) et, en parallèle, la piste D (vraie 3D, via `autotour_reconstruction.ipynb`) sur ce même véhicule.
 5. Montrer les résultats à quelques garages et particuliers.
 6. Comparer 2-3 concurrents via leurs démos gratuites.
 7. Revenir à ce document, mettre à jour les hypothèses, et décider de la suite (projet Next.js, comptes, paiement).
 
 ---
 
-*Dernière mise à jour : 24 septembre 2026. À faire évoluer au fil des tests.*
+*Dernière mise à jour : 27 septembre 2026. À faire évoluer au fil des tests.*
