@@ -5,36 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Visite 360°</title>
 <style>
-:root{--bg:#eef0f2;--fg:#15181b;--mut:#5b6670;--line:#cfd5da;--acc:#0f6b7c;--accfg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}}
-:root[data-theme="dark"]{--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}
+:root{
+  --bg:#f4f6fb;--panel:#ffffff;--fg:#0f1729;--mut:#5f6b85;--line:#e1e6f0;
+  --acc:#2f6feb;--accfg:#ffffff;--shadow:0 1px 2px rgba(15,23,41,.04),0 10px 24px -12px rgba(15,23,41,.12);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
-header,.track,.tools,.note{max-width:760px;margin-left:auto;margin-right:auto;padding-left:16px;padding-right:16px}
-header{padding-top:20px;padding-bottom:12px}
-h1{margin:0;font-size:1.6rem;letter-spacing:-.02em}
-#src{margin:2px 0 0;color:var(--mut);font-size:.95rem}
-.stage{position:relative;max-width:760px;margin:0 auto;background:#c3cbd1;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+header,.track,.tools,.note{max-width:760px;margin-left:auto;margin-right:auto;padding-left:18px;padding-right:18px}
+header{padding-top:22px;padding-bottom:14px}
+.back{display:inline-flex;color:var(--mut);text-decoration:none;font-weight:600;font-size:.86rem;margin-bottom:4px}
+h1{margin:0;font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
+#src{margin:4px 0 0;color:var(--mut);font-size:.94rem}
+.stage{position:relative;width:calc(100% - 36px);max-width:724px;margin:0 auto;background:#1a1f2b;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
 .stage:focus-visible{outline:3px solid var(--acc);outline-offset:-3px}
-@media (min-width:760px){.stage{border-radius:14px;overflow:hidden}}
 canvas{display:block;width:100%;height:auto}
-.hint{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);background:rgba(16,19,21,.72);color:#fff;padding:7px 14px;border-radius:99px;font-size:.9rem;transition:opacity .4s;pointer-events:none}
+.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(10,15,28,.72);color:#fff;padding:7px 14px;border-radius:99px;font-size:.88rem;font-weight:600;transition:opacity .4s;pointer-events:none}
 .hint.off{opacity:0}
-.load{position:absolute;inset:0;display:grid;place-items:center;background:rgba(16,19,21,.62);color:#fff;font-weight:600;text-align:center;padding:16px}
+.load{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,15,28,.66);color:#fff;font-weight:600;text-align:center;padding:16px}
 .load[hidden]{display:none}
-.track{margin-top:16px}
+.track{margin-top:18px}
 .rail{height:4px;background:var(--line);border-radius:4px;position:relative}
 #bar{position:absolute;top:-4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--acc)}
 .tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
-button{font:inherit;font-weight:600;border-radius:10px;padding:11px 16px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg)}
-button.main{background:var(--acc);color:var(--accfg)}
-button:focus-visible{outline:3px solid var(--fg);outline-offset:2px}
-.note{margin-top:16px;margin-bottom:32px;color:var(--mut);font-size:.95rem}
+button{font:inherit;font-weight:700;border-radius:11px;padding:12px 18px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);transition:transform .12s ease}
+button.main{background:var(--acc);color:var(--accfg);box-shadow:0 6px 18px -8px rgba(47,111,235,.55)}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
+.note{margin-top:18px;margin-bottom:34px;color:var(--mut);font-size:.94rem}
 </style>
 </head>
 <body>
 <header>
-  <p class="mut" style="margin-bottom:2px"><a href="index.html" style="color:var(--mut);text-decoration:none;font-weight:600;font-size:.9rem">← AutoTour</a></p>
+  <a class="back" href="index.html">← AutoTour</a>
   <h1>Visite 360°</h1>
   <p id="src">Démonstration : véhicule fictif</p>
 </header>
@@ -61,7 +67,7 @@ let auto=!matchMedia('(prefers-reduced-motion: reduce)').matches;
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 
 /* ---------- Véhicule de démonstration (modèle 3D simple, rendu image par image) ---------- */
-const M=[],paint=[22,98,116],glass=[34,48,58];
+const M=[],paint=[36,72,158],glass=[30,38,58];
 const face=(v,n,c,l=0)=>M.push({v,n,c,l});
 function box(x0,x1,y0,y1,z0,z1,c){
   face([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1]],[1,0,0],c);

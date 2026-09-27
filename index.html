@@ -3,137 +3,283 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="color-scheme" content="dark">
-<title>AutoTour — La visite 360° de ta voiture, faite avec ton téléphone</title>
-<meta name="description" content="Filme un tour de ton véhicule avec ton téléphone. AutoTour garde les défauts visibles et produit une visite à partager dans ton annonce.">
+<meta name="color-scheme" content="dark light">
+<title>AutoTour — Ta voiture en visite 360°, filmée avec ton téléphone</title>
+<meta name="description" content="Filme un tour de ton véhicule avec ton téléphone. AutoTour en fait une visite 360° partageable en un lien, prête pour ton annonce.">
 <style>
-/*
-  Thème délibérément fixe (pas d'adaptation au mode clair du système) :
-  identité "high tech" assumée pour cette page de présentation, contrairement
-  aux outils (capture, viewer) qui restent clairs/sombres automatiques.
-*/
 :root{
-  --bg:#05080a;--panel:rgba(16,24,27,.6);--panel-solid:#10171a;--fg:#eaf6f8;--mut:#8ea3a8;
-  --line:rgba(74,224,238,.2);--acc:#39e2ef;--accfg:#022226;--flag:#ffb020;--glow:rgba(57,226,239,.5);
+  --ink:#0f1729;--mut:#5f6b85;--line:#e1e6f0;--bg:#f4f6fb;--panel:#ffffff;
+  --acc:#2f6feb;--acc2:#1c4fc4;--accfg:#ffffff;
+  --night:#070b16;--night2:#0d1428;--fringe:rgba(47,111,235,.35);
+  --shadow:0 1px 2px rgba(15,23,41,.04),0 16px 32px -18px rgba(15,23,41,.16);
   box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
 }
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 "Avenir Next","Segoe UI",system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--acc)}
-.mono{font-family:"SFMono-Regular",Consolas,"Roboto Mono",monospace}
+img,svg{max-width:100%}
 
-nav.top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;max-width:980px;margin:0 auto}
-.word{font-weight:800;font-size:1.15rem;letter-spacing:.02em}
-.word .dot{color:var(--acc);text-shadow:0 0 8px var(--glow)}
-nav.top a{font-weight:600;text-decoration:none;font-size:.9rem;color:var(--mut)}
+/* ---- nav ---- */
+nav.top{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;max-width:1080px;margin:0 auto;position:relative;z-index:2}
+.word{font-weight:800;font-size:1.12rem;letter-spacing:-.01em;color:#fff;text-decoration:none}
+.word .dot{color:#5b8bf5}
+nav.top .navlinks{display:none;gap:26px}
+nav.top .navlinks a{color:#aab4cc;text-decoration:none;font-size:.9rem;font-weight:600}
+@media (min-width:720px){nav.top .navlinks{display:flex}}
+nav.top a.essayer{font-weight:700;text-decoration:none;font-size:.85rem;color:var(--night);background:#fff;padding:9px 17px;border-radius:9px}
 
+/* ---- hero ---- */
 .hero-panel{
-  position:relative;overflow:hidden;padding:10px 18px 46px;
+  position:relative;overflow:hidden;padding-bottom:58px;
   background:
-    radial-gradient(ellipse 480px 320px at 25% -6%,rgba(57,226,239,.16),transparent 60%),
-    linear-gradient(rgba(57,226,239,.055) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(57,226,239,.055) 1px,transparent 1px),
-    var(--bg);
-  background-size:auto,32px 32px,32px 32px,auto;
+    radial-gradient(ellipse 640px 400px at 18% -8%,var(--fringe),transparent 60%),
+    linear-gradient(rgba(91,139,245,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(91,139,245,.06) 1px,transparent 1px),
+    var(--night);
+  background-size:auto,34px 34px,34px 34px,auto;
+  color:#fff;
 }
-.hero{max-width:980px;margin:0 auto;display:grid;gap:30px;grid-template-columns:1fr;align-items:center;position:relative}
-@media (min-width:760px){.hero{grid-template-columns:1.05fr .95fr;padding-top:18px}}
-.hero h1{margin:0 0 14px;font-size:clamp(1.9rem,5vw,2.7rem);line-height:1.12;letter-spacing:-.02em;font-weight:800}
-.hero p.lede{margin:0 0 24px;color:var(--mut);font-size:1.08rem;max-width:46ch}
-.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-button,.btn{font:inherit;font-weight:700;border-radius:10px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);text-decoration:none;display:inline-block;transition:transform .12s ease}
-.btn.main,button.main{background:var(--acc);color:var(--accfg);box-shadow:0 0 0 1px var(--glow),0 0 24px -4px var(--glow)}
-.btn.ghost{border-color:var(--line);color:var(--mut);font-weight:600}
-button:active,.btn:active{transform:scale(.97)}
-button:focus-visible,.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.hero{max-width:1080px;margin:0 auto;padding:10px 20px 0;display:grid;gap:38px;grid-template-columns:1fr;align-items:center;position:relative}
+@media (min-width:800px){.hero{grid-template-columns:1.08fr .92fr;padding-top:22px}}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#9db2ee;font-size:.82rem;font-weight:700;background:rgba(91,139,245,.12);border:1px solid rgba(91,139,245,.25);padding:6px 12px;border-radius:99px;margin-bottom:18px}
+.eyebrow i{width:6px;height:6px;border-radius:50%;background:#5b8bf5}
+.hero h1{margin:0 0 16px;font-size:clamp(2rem,5vw,2.85rem);line-height:1.1;letter-spacing:-.02em;font-weight:800}
+.hero p.lede{margin:0 0 28px;color:#aab4cc;font-size:1.08rem;max-width:46ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:30px}
+.btn{font:inherit;font-weight:700;border-radius:10px;padding:14px 22px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:#fff;text-decoration:none;display:inline-block;transition:transform .12s ease}
+.btn.main{background:var(--acc);border-color:var(--acc);box-shadow:0 10px 26px -10px rgba(47,111,235,.75)}
+.btn.ghost{border-color:rgba(255,255,255,.25);color:#cdd5e8;font-weight:600}
+.btn:active{transform:scale(.97)}
+.btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:22px}
+.chip{display:flex;align-items:center;gap:9px;color:#c6cee3;font-size:.86rem;font-weight:600}
+.chip svg{width:17px;height:17px;flex:none;color:#5b8bf5}
 
-.car-card{position:relative;border:1px solid var(--line);border-radius:20px;background:var(--panel);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:18px}
-.car-illust{width:100%;height:auto;display:block;filter:drop-shadow(0 0 10px var(--glow))}
-.stage-cap{margin:12px 2px 0;color:var(--mut);font-size:.82rem;text-align:center}
+.spin-card{position:relative;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));backdrop-filter:blur(10px);padding:26px 22px 20px}
+.spin-card .tag{position:absolute;top:18px;left:18px;display:flex;align-items:center;gap:7px;font-size:.72rem;font-weight:700;color:#8fe3b0;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.25);padding:4px 10px;border-radius:99px}
+.spin-card .tag i{width:6px;height:6px;border-radius:50%;background:#4ade80}
+.spin-card svg.car{width:100%;height:auto;display:block;margin-top:26px}
+.spin-cap{margin:16px 2px 0;color:#8b96b3;font-size:.82rem;text-align:center}
 
-section{padding:38px 18px}
-.card{max-width:980px;margin:0 auto;border:1px solid var(--line);border-radius:20px;background:var(--panel-solid);padding:32px 24px}
-h2{font-size:1.4rem;letter-spacing:-.01em;margin:0 0 10px}
-.card p,.card>p{color:var(--mut)}
+/* ---- content sections ---- */
+section{padding:52px 20px}
+.card{max-width:1080px;margin:0 auto}
+.kicker{color:var(--acc);font-weight:700;font-size:.85rem;margin:0 0 8px}
+h2{font-size:1.5rem;letter-spacing:-.01em;margin:0 0 10px;font-weight:800}
+.section-lede{color:var(--mut);margin:0 0 30px;max-width:56ch;font-size:1.02rem}
 
-.steps{display:grid;gap:16px;margin-top:22px}
-@media (min-width:640px){.steps{grid-template-columns:repeat(3,1fr)}}
-.step{border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;background:rgba(57,226,239,.03)}
-.step .n{width:32px;height:32px;border-radius:8px;border:1.5px solid var(--acc);color:var(--acc);display:grid;place-items:center;font-weight:800;font-size:.9rem;text-shadow:0 0 8px var(--glow)}
-.step h3{margin:0;font-size:1.02rem}
+.steps{display:grid;gap:16px}
+@media (min-width:680px){.steps{grid-template-columns:repeat(3,1fr)}}
+.step{border:1px solid var(--line);border-radius:16px;padding:24px 22px;background:var(--panel);box-shadow:var(--shadow)}
+.step .ic{width:42px;height:42px;border-radius:11px;background:rgba(47,111,235,.1);color:var(--acc);display:grid;place-items:center;margin-bottom:16px}
+.step .ic svg{width:21px;height:21px}
+.step h3{margin:0 0 7px;font-size:1.04rem}
 .step p{margin:0;color:var(--mut);font-size:.93rem}
 
-.trust{display:grid;gap:26px;align-items:center}
-@media (min-width:700px){.trust{grid-template-columns:1fr 1fr}}
-.trust p{max-width:52ch;margin:0}
-.car-svg{width:100%;max-width:380px;height:auto;filter:drop-shadow(0 0 8px var(--glow))}
-.flag-dot{fill:var(--flag)}
-.flag-ring{fill:none;stroke:var(--flag);stroke-width:2;opacity:.6}
+.compare{display:grid;gap:16px}
+@media (min-width:680px){.compare{grid-template-columns:1fr 1fr}}
+.compare .col{border-radius:16px;padding:26px 24px;border:1px solid var(--line)}
+.compare .col.us{background:var(--night);color:#fff;border-color:transparent;box-shadow:0 20px 40px -22px rgba(7,11,22,.5)}
+.compare .col.them{background:var(--panel)}
+.compare h3{margin:0 0 16px;font-size:1.08rem}
+.compare ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.compare li{display:flex;gap:10px;align-items:flex-start;font-size:.93rem}
+.compare .col.us li{color:#d3dbf0}
+.compare .col.them li{color:var(--mut)}
+.compare li svg{width:16px;height:16px;flex:none;margin-top:2px}
+.compare .col.us svg{color:#5b8bf5}
+.compare .col.them svg{color:#c2405b}
 
-.status ul{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:12px}
-.status li{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:14px 16px}
-.status li b{color:var(--fg);font-weight:700}
-.badge{flex:none;display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border-radius:20px;font-size:.72rem;letter-spacing:.06em;font-weight:700;margin-top:1px}
-.badge.live{color:var(--acc);border:1px solid var(--acc);text-shadow:0 0 6px var(--glow)}
-.badge.test{color:var(--flag);border:1px solid var(--flag)}
-.badge i{width:6px;height:6px;border-radius:50%;background:currentColor;box-shadow:0 0 6px currentColor}
+.trust{display:grid;gap:32px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:32px 26px;box-shadow:var(--shadow)}
+@media (min-width:700px){.trust{grid-template-columns:1.1fr .9fr;padding:38px}}
+.trust h2{margin-bottom:12px}
+.trust p{max-width:48ch;margin:0;color:var(--mut)}
+.trust svg{width:100%;max-width:340px;height:auto}
 
-form.signup{margin-top:20px;display:grid;gap:12px;max-width:440px}
+.status ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.status li{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:15px 16px;background:var(--panel)}
+.status li b{font-weight:700}
+.status p.txt{margin:0;color:var(--mut);font-size:.94rem}
+.badge{flex:none;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;margin-top:1px}
+.badge.live{color:#0a7a4a;background:rgba(16,163,102,.1)}
+.badge.test{color:#b7791f;background:rgba(217,141,15,.12)}
+.badge i{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.cta-band{background:linear-gradient(135deg,var(--acc2),var(--acc));border-radius:22px;padding:40px 30px;color:#fff;max-width:1080px;margin:0 auto;box-shadow:0 24px 48px -22px rgba(47,111,235,.55)}
+@media (min-width:700px){.cta-band{padding:46px 44px;display:flex;align-items:center;justify-content:space-between;gap:30px}}
+.cta-band h2{color:#fff;margin-bottom:8px}
+.cta-band p{color:#dbe6ff;margin:0;max-width:42ch}
+.cta-band .btn.main{background:#fff;color:var(--acc2);border-color:#fff;box-shadow:none;margin-top:22px}
+@media (min-width:700px){.cta-band .btn.main{margin-top:0;flex:none}}
+
+.signup-card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:32px 26px;max-width:1080px;margin:0 auto;box-shadow:var(--shadow)}
+form.signup{margin-top:18px;display:grid;gap:12px;max-width:440px}
 form.signup .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-label{font-size:.85rem;color:var(--mut);display:block;margin-bottom:5px}
-input,select{font:inherit;width:100%;padding:11px 12px;border-radius:9px;border:1.5px solid var(--line);background:#0a1012;color:var(--fg)}
+label{font-size:.83rem;color:var(--mut);display:block;margin-bottom:5px;font-weight:600}
+input,select{font:inherit;width:100%;padding:11px 12px;border-radius:9px;border:1.5px solid var(--line);background:#fbfcfe;color:var(--ink)}
 input:focus-visible,select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-#signupNote{font-size:.85rem;color:var(--mut);margin-top:10px}
+button.main{font:inherit;font-weight:700;border-radius:10px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:var(--acc);color:#fff}
+#signupNote{font-size:.85rem;color:var(--mut);margin-top:12px}
 
-footer{padding:30px 18px 40px;color:var(--mut);font-size:.85rem;text-align:center}
+footer{padding:30px 20px 44px;color:var(--mut);font-size:.85rem;text-align:center;max-width:1080px;margin:0 auto}
 </style>
 </head>
 <body>
 
-<nav class="top">
-  <span class="word">AutoTour<span class="dot">.</span></span>
-  <a href="#comment">Comment ça marche</a>
-</nav>
-
 <div class="hero-panel">
-  <div class="hero">
+  <nav class="top">
+    <a class="word" href="#top">AutoTour<span class="dot">.</span></a>
+    <div class="navlinks">
+      <a href="#comment">Comment ça marche</a>
+      <a href="#comparatif">Pourquoi AutoTour</a>
+      <a href="#etat">État du produit</a>
+    </div>
+    <a class="essayer" href="capture-guidee.html">Essayer</a>
+  </nav>
+  <div class="hero" id="top">
     <div>
-      <h1>La visite 360° de ta voiture, faite avec ton téléphone.</h1>
-      <p class="lede">Un tour complet en quelques minutes, sans matériel ni compétence technique, pour une annonce qui inspire confiance — à petit prix.</p>
+      <span class="eyebrow"><i></i>Fait pour être filmé au téléphone</span>
+      <h1>Ta voiture mérite mieux qu'une photo floue dans un parking.</h1>
+      <p class="lede">Filme un tour de 40 secondes avec ton téléphone. AutoTour en fait une visite 360° que l'acheteur explore du doigt, avec un lien à coller directement dans ton annonce.</p>
       <div class="cta-row">
-        <a class="btn main" href="capture-guidee.html">Essayer sur mon véhicule</a>
-        <a class="btn ghost" href="#etat">Voir où on en est</a>
+        <a class="btn main" href="capture-guidee.html">Filmer mon véhicule</a>
+        <a class="btn ghost" href="#comment">Voir comment ça marche</a>
+      </div>
+      <div class="chips">
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="5"/></svg>Aucune app à installer</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>Prêt en moins de 3 minutes</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Rien n'est retouché</span>
       </div>
     </div>
-    <div class="car-card">
-      <svg class="car-illust" viewBox="0 0 480 240" xmlns="http://www.w3.org/2000/svg">
-        <ellipse cx="245" cy="205" rx="165" ry="10" fill="none" stroke="var(--acc)" stroke-width="1" opacity=".35"/>
-        <ellipse cx="245" cy="205" rx="120" ry="7" fill="none" stroke="var(--acc)" stroke-width="1" opacity=".2"/>
-        <path d="M55,168 C52,128 84,106 128,102 L162,66 C186,44 222,32 262,32 L316,42 C352,50 380,68 404,100 C440,102 452,124 452,150 C452,168 438,178 418,178 L82,178 C64,178 56,176 55,168 Z"
-              fill="rgba(57,226,239,.06)" stroke="var(--acc)" stroke-width="2.5"/>
-        <path d="M172,100 L200,68 C216,52 240,44 264,44 L296,52 L296,100 Z" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".7"/>
-        <path d="M306,52 C332,60 352,74 368,98 L306,98 Z" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".7"/>
-        <circle cx="150" cy="180" r="30" fill="none" stroke="var(--acc)" stroke-width="2"/><circle cx="150" cy="180" r="13" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".7"/>
-        <circle cx="366" cy="180" r="30" fill="none" stroke="var(--acc)" stroke-width="2"/><circle cx="366" cy="180" r="13" fill="none" stroke="var(--acc)" stroke-width="1.5" opacity=".7"/>
-        <g fill="var(--acc)">
-          <circle cx="120" cy="104" r="2.6"/><circle cx="180" cy="70" r="2.2"/><circle cx="230" cy="40" r="2.4"/>
-          <circle cx="290" cy="44" r="2.2"/><circle cx="340" cy="60" r="2.6"/><circle cx="390" cy="92" r="2.2"/>
-          <circle cx="430" cy="112" r="2.4"/><circle cx="440" cy="140" r="2.2"/><circle cx="70" cy="140" r="2.4"/>
-          <circle cx="95" cy="118" r="2"/><circle cx="410" cy="150" r="2"/><circle cx="245" cy="34" r="2.2"/>
-        </g>
+    <div class="spin-card">
+      <span class="tag"><i></i>Spin 360° en ligne</span>
+      <svg class="car" viewBox="0 0 560 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6f97f2"/>
+            <stop offset="1" stop-color="#25407e"/>
+          </linearGradient>
+          <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#9fb6ee" stop-opacity=".5"/>
+            <stop offset="1" stop-color="#3a5aa8" stop-opacity=".35"/>
+          </linearGradient>
+          <radialGradient id="shadow" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#000" stop-opacity=".45"/>
+            <stop offset="1" stop-color="#000" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <ellipse cx="280" cy="228" rx="200" ry="16" fill="url(#shadow)"/>
+
+        <!-- arches (assombrissement derrière les roues) -->
+        <path d="M118,222 a48,40 0 0 1 96,0 Z" fill="#0c1424"/>
+        <path d="M348,222 a48,40 0 0 1 96,0 Z" fill="#0c1424"/>
+
+        <!-- carrosserie -->
+        <path d="M62,205
+                 C58,178 70,160 96,152
+                 L132,150
+                 L168,104 C186,80 214,66 250,64
+                 L338,64 C374,68 404,86 428,116
+                 L452,150
+                 C488,152 506,168 508,196
+                 C509,206 502,213 490,213
+                 L470,213
+                 L462,205
+                 L120,205
+                 L104,213
+                 L78,213
+                 C68,213 62,210 62,205 Z"
+              fill="url(#body)" stroke="#1b2c57" stroke-width="2"/>
+
+        <!-- pare-brise + vitres -->
+        <path d="M180,150 L196,112 C208,92 228,80 250,78 L250,150 Z" fill="url(#glass)" stroke="#1b2c57" stroke-width="1.5"/>
+        <path d="M256,78 L326,78 C352,82 372,96 388,116 L388,150 L256,150 Z" fill="url(#glass)" stroke="#1b2c57" stroke-width="1.5"/>
+        <path d="M256,84 L256,144" stroke="#1b2c57" stroke-width="1.5"/>
+        <path d="M322,84 L322,144" stroke="#1b2c57" stroke-width="1.5"/>
+
+        <!-- ligne de caisse -->
+        <path d="M100,168 L452,168" stroke="#16244a" stroke-width="1.5" opacity=".6"/>
+        <path d="M132,150 L452,150" stroke="#16244a" stroke-width="1" opacity=".4"/>
+
+        <!-- rétroviseur + poignées -->
+        <path d="M182,120 C172,118 165,123 165,132 C165,138 171,141 178,140 L184,132 Z" fill="#1b2c57"/>
+        <circle cx="228" cy="180" r="2.6" fill="#0c1424"/>
+        <circle cx="300" cy="180" r="2.6" fill="#0c1424"/>
+
+        <!-- feux -->
+        <rect x="440" y="130" width="16" height="7" rx="2.5" fill="#ffd98a"/>
+        <rect x="66" y="176" width="14" height="7" rx="2.5" fill="#ff6b6b"/>
+
+        <!-- roues -->
+        <circle cx="166" cy="222" r="34" fill="#0c1424" stroke="#1b2c57" stroke-width="2"/>
+        <circle cx="166" cy="222" r="17" fill="none" stroke="#7c9bef" stroke-width="2"/>
+        <circle cx="166" cy="222" r="4" fill="#7c9bef"/>
+        <circle cx="396" cy="222" r="34" fill="#0c1424" stroke="#1b2c57" stroke-width="2"/>
+        <circle cx="396" cy="222" r="17" fill="none" stroke="#7c9bef" stroke-width="2"/>
+        <circle cx="396" cy="222" r="4" fill="#7c9bef"/>
+
+        <!-- rotation 360 -->
+        <path d="M70,258 C70,244 160,236 280,236 C400,236 490,244 490,258" fill="none" stroke="#5b8bf5" stroke-width="2.5"/>
+        <path d="M490,258 l-15,-8 M490,258 l-2,17" fill="none" stroke="#5b8bf5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M70,258 l15,8 M70,258 l2,-17" fill="none" stroke="#5b8bf5" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="280" y="288" fill="#5b8bf5" font-size="22" font-weight="800" text-anchor="middle" letter-spacing="1">360°</text>
       </svg>
+      <p class="spin-cap">Exemple réel : rendu obtenu depuis une vidéo tournée au téléphone</p>
     </div>
   </div>
 </div>
 
 <section id="comment">
   <div class="card">
-    <h2>Comment ça marche</h2>
+    <p class="kicker">Le principe</p>
+    <h2>Trois étapes, zéro matériel</h2>
+    <p class="section-lede">Pas de studio, pas de trépied, pas d'application à télécharger : tout se passe dans le navigateur du téléphone.</p>
     <div class="steps">
-      <div class="step"><span class="n mono">1</span><h3>Tu filmes un tour du véhicule</h3><p>L'appli guide le geste avec des flèches et un cadre, directement dans le navigateur du téléphone.</p></div>
-      <div class="step"><span class="n mono">2</span><h3>Elle garde l'essentiel</h3><p>L'image la plus nette à chaque angle, traitée sur le téléphone. Pas besoin d'envoyer une vidéo entière.</p></div>
-      <div class="step"><span class="n mono">3</span><h3>Tu obtiens une visite à partager</h3><p>Un fichier prêt à joindre à l'annonce, envoyer par message, ou déposer sur un site.</p></div>
+      <div class="step">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 7l-7 5 7 5V7Z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg></span>
+        <h3>Tu filmes un tour</h3>
+        <p>Des flèches à l'écran indiquent le sens, la vitesse, et si le véhicule sort du cadre. Un seul passage suffit.</p>
+      </div>
+      <div class="step">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg></span>
+        <h3>Le téléphone fait le tri</h3>
+        <p>Seule l'image la plus nette de chaque angle est gardée, directement sur l'appareil — rien à envoyer sur un serveur pendant la capture.</p>
+      </div>
+      <div class="step">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.07 0l2.83-2.83a5 5 0 0 0-7.07-7.07L11 4.76"/><path d="M14 11a5 5 0 0 0-7.07 0L4.1 13.83a5 5 0 0 0 7.07 7.07L13 19.24"/></svg></span>
+        <h3>Tu obtiens un lien</h3>
+        <p>Une visite 360° que l'acheteur fait tourner du doigt, à coller dans l'annonce, un message ou un site de garage.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="comparatif">
+  <div class="card">
+    <p class="kicker">Pourquoi pas un studio ou un photographe</p>
+    <h2>Ce que ça change, concrètement</h2>
+    <p class="section-lede">Les solutions pro existent, mais elles visent les concessions avec du volume. AutoTour vise autre chose : que tu puisses le faire seul, aujourd'hui, avec ce que tu as déjà en poche.</p>
+    <div class="compare">
+      <div class="col us">
+        <h3>Avec AutoTour</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Ton téléphone, rien à installer</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>3 minutes, tout de suite</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Pensé pour un véhicule à la fois</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>Lien direct, sans intermédiaire</li>
+        </ul>
+      </div>
+      <div class="col them">
+        <h3>Studio ou photographe</h3>
+        <ul>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Matériel dédié ou déplacement</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Rendez-vous à prendre, délai d'attente</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Pensé pour des flottes, pas un particulier</li>
+          <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>Abonnement mensuel, même pour un seul véhicule</li>
+        </ul>
+      </div>
     </div>
   </div>
 </section>
@@ -141,33 +287,49 @@ footer{padding:30px 18px 40px;color:var(--mut);font-size:.85rem;text-align:cente
 <section>
   <div class="card trust">
     <div>
-      <h2>Montrer la voiture telle qu'elle est.</h2>
-      <p>On ne gomme rien. Une rayure, une jante marquée, l'usure d'un volant restent visibles dans la visite. Ce que l'acheteur regarde, c'est la vraie voiture — pas une image retouchée.</p>
+      <p class="kicker">Ce que voit l'acheteur</p>
+      <h2>La vraie voiture, pas une image lissée.</h2>
+      <p>On ne gomme rien. Une rayure, une jante marquée, l'usure d'un volant restent visibles dans la visite. C'est justement ça qui rassure un acheteur habitué aux photos trop parfaites des annonces entre particuliers.</p>
     </div>
-    <svg class="car-svg" viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
-      <path d="M40 130 Q40 90 90 88 L130 60 Q160 46 200 46 L260 60 Q300 66 330 88 Q365 90 365 122 Q365 138 348 138 L58 138 Q40 138 40 130 Z" fill="none" stroke="var(--acc)" stroke-width="2.5" opacity=".8"/>
-      <circle cx="110" cy="140" r="20" fill="none" stroke="var(--acc)" stroke-width="2.5" opacity=".8"/>
-      <circle cx="300" cy="140" r="20" fill="none" stroke="var(--acc)" stroke-width="2.5" opacity=".8"/>
-      <circle class="flag-dot" cx="150" cy="95" r="4"/><circle class="flag-ring" cx="150" cy="95" r="10"/>
-      <circle class="flag-dot" cx="300" cy="118" r="4"/><circle class="flag-ring" cx="300" cy="118" r="10"/>
+    <svg viewBox="0 0 400 180" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40 130 Q40 90 90 88 L130 60 Q160 46 200 46 L260 60 Q300 66 330 88 Q365 90 365 122 Q365 138 348 138 L58 138 Q40 138 40 130 Z" fill="rgba(47,111,235,.06)" stroke="#2f6feb" stroke-width="2.5" opacity=".85"/>
+      <circle cx="110" cy="140" r="20" fill="#fff" stroke="#2f6feb" stroke-width="2.5" opacity=".85"/>
+      <circle cx="300" cy="140" r="20" fill="#fff" stroke="#2f6feb" stroke-width="2.5" opacity=".85"/>
+      <circle cx="150" cy="95" r="4" fill="#d97706"/><circle cx="150" cy="95" r="10" fill="none" stroke="#d97706" stroke-width="2" opacity=".6"/>
+      <circle cx="300" cy="118" r="4" fill="#d97706"/><circle cx="300" cy="118" r="10" fill="none" stroke="#d97706" stroke-width="2" opacity=".6"/>
+      <text x="163" y="80" fill="#b7791f" font-size="11" font-weight="700">rayure signalée</text>
+      <text x="288" y="105" fill="#b7791f" font-size="11" font-weight="700" text-anchor="end">jante marquée</text>
     </svg>
   </div>
 </section>
 
 <section id="etat">
   <div class="card status">
-    <h2>Le stade actuel</h2>
+    <p class="kicker">Transparence</p>
+    <h2>Où en est AutoTour</h2>
+    <p class="section-lede">On préfère te dire clairement ce qui tourne déjà et ce qui est encore en développement, plutôt que le découvrir après coup.</p>
     <ul>
-      <li><span class="badge live mono"><i></i>EN LIGNE</span><span><b>Le spin 360°</b> fonctionne déjà — teste-le sur ta propre voiture avec le bouton ci-dessus.</span></li>
-      <li><span class="badge test mono"><i></i>EN TEST</span><span><b>La vraie 3D</b> (tourner librement autour de la voiture, pas juste des photos qui défilent) est en test technique, pas encore prête pour un usage réel.</span></li>
+      <li><span class="badge live"><i></i>EN LIGNE</span><span class="txt"><b>Le spin 360°</b> fonctionne déjà de bout en bout — filme et teste-le sur ta propre voiture avec le bouton en haut de page.</span></li>
+      <li><span class="badge test"><i></i>EN DÉVELOPPEMENT</span><span class="txt"><b>La vraie 3D</b> (tourner librement autour du véhicule, pas juste des images qui défilent) est en cours de test technique.</span></li>
     </ul>
   </div>
 </section>
 
+<section>
+  <div class="cta-band">
+    <div>
+      <h2>Ta prochaine annonce mérite une vraie visite.</h2>
+      <p>Prends ton téléphone, fais le tour du véhicule, obtiens ton lien. C'est gratuit pendant la phase de test.</p>
+    </div>
+    <a class="btn main" href="capture-guidee.html">Filmer mon véhicule</a>
+  </div>
+</section>
+
 <section id="prevenir">
-  <div class="card">
-    <h2>Être prévenu quand ce sera disponible</h2>
-    <p style="margin:0;max-width:52ch">Laisse quelques infos, ça ouvre un e-mail déjà prérempli — aucune inscription en ligne pour l'instant.</p>
+  <div class="signup-card">
+    <p class="kicker">Rester informé</p>
+    <h2>Être prévenu à chaque nouveauté</h2>
+    <p class="section-lede" style="margin-bottom:0">Laisse quelques infos, ça ouvre un e-mail déjà prérempli — aucune inscription en ligne pour l'instant.</p>
     <form class="signup" id="signup">
       <div class="row2">
         <div><label for="prenom">Prénom</label><input id="prenom" required></div>
@@ -186,7 +348,7 @@ footer{padding:30px 18px 40px;color:var(--mut);font-size:.85rem;text-align:cente
   </div>
 </section>
 
-<footer>AutoTour — projet en cours de test.</footer>
+<footer>AutoTour — le spin 360° est en ligne, la vraie 3D arrive.</footer>
 
 <script>
 document.getElementById('signup').addEventListener('submit',e=>{

@@ -5,30 +5,38 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>AutoTour — Vue 3D</title>
 <style>
-:root{--bg:#eef0f2;--fg:#15181b;--mut:#5b6670;--line:#cfd5da;--acc:#0f6b7c;--accfg:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}}
-:root[data-theme="dark"]{--bg:#101315;--fg:#eef1f3;--mut:#9aa6af;--line:#2a3136;--acc:#5cc3d6;--accfg:#06262c}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.45 "Avenir Next","Segoe UI",system-ui,sans-serif}
+:root{
+  --bg:#f4f6fb;--panel:#ffffff;--fg:#0f1729;--mut:#5f6b85;--line:#e1e6f0;
+  --acc:#2f6feb;--accfg:#ffffff;--shadow:0 1px 2px rgba(15,23,41,.04),0 10px 24px -12px rgba(15,23,41,.12);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}}
+:root[data-theme="dark"]{--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 [hidden]{display:none!important}
-.page{max-width:560px;margin:0 auto;padding:24px 16px 32px}
-h1{margin:0 0 8px;font-size:1.6rem;letter-spacing:-.02em}
+.page{max-width:520px;margin:0 auto;padding:22px 18px 40px}
+.back{display:inline-flex;color:var(--mut);text-decoration:none;font-weight:600;font-size:.86rem;margin-bottom:14px}
+h1{margin:0 0 8px;font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
 p{margin:0 0 12px}.mut{color:var(--mut)}
-button,label.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 18px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);display:inline-block}
-button.main,label.btn.main{background:var(--acc);color:var(--accfg)}
+button,label.btn{font:inherit;font-weight:700;border-radius:11px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);display:inline-block;transition:transform .12s ease}
+button.main,label.btn.main{background:var(--acc);color:var(--accfg);box-shadow:0 6px 18px -8px rgba(47,111,235,.55)}
+button:active,label.btn:active{transform:scale(.97)}
+button:focus-visible,label.btn:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
 input[type=file]{display:none}
-#drop{border:2px dashed var(--line);border-radius:16px;padding:32px 16px;text-align:center;margin:16px 0}
-#stage{position:fixed;inset:0;background:#0c0e10;display:none}
+#drop{border:2px dashed var(--line);border-radius:16px;padding:34px 16px;text-align:center;margin:18px 0;background:var(--panel);box-shadow:var(--shadow)}
+#stage{position:fixed;inset:0;background:#070b16;display:none}
 #stage.on{display:block}
 #stage canvas{display:block;width:100%;height:100%}
-#back{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2;color:#fff;border-color:rgba(255,255,255,.6);padding:8px 12px}
+#back{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2;color:#fff;border-color:rgba(255,255,255,.35);padding:8px 14px}
 #status{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);text-align:center;color:#fff;font-weight:600;text-shadow:0 1px 4px #000;pointer-events:none}
-#err{color:#c0392b;font-weight:600;margin-top:14px;white-space:pre-wrap}
+#err{color:#dc2626;font-weight:600;margin-top:14px;white-space:pre-wrap;background:rgba(220,38,38,.08);border-radius:10px;padding:10px 12px}
 </style>
 </head>
 <body>
 
 <div class="page" id="start">
-  <p class="mut" style="margin-bottom:2px"><a href="index.html" style="color:var(--mut);text-decoration:none;font-weight:600;font-size:.9rem">← AutoTour</a></p>
+  <a class="back" href="index.html">← AutoTour</a>
   <h1>AutoTour — Vue 3D</h1>
   <p class="mut">Viewer de test : ouvre un modèle Gaussian Splatting (.ply) produit par le pipeline de reconstruction.</p>
   <div id="drop">
