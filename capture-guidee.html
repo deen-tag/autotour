@@ -55,7 +55,7 @@ canvas{display:block;width:100%;height:auto}
   <ol>
     <li>Tiens le téléphone droit, à hauteur de poitrine, à 3 ou 4 mètres du véhicule.</li>
     <li>Garde le véhicule entier dans le cadre et marche lentement autour.</li>
-    <li>L'application prend une image tous les 10° et te dit quand ralentir ou continuer.</li>
+    <li>L'application prend une image tous les 10° pour l'aperçu (et beaucoup plus, tous les 3°, en arrière-plan pour la 3D), et te dit quand ralentir ou continuer.</li>
   </ol>
   <button class="main" id="begin">Ouvrir la caméra</button>
   <p id="err"></p>
@@ -86,9 +86,10 @@ canvas{display:block;width:100%;height:auto}
 
 <script>
 const $=id=>document.getElementById(id);
-const N=36,STEP=360/N;
+const N=36,STEP=360/N,DSTEP=3,DN=Math.round(360/DSTEP);
 let stream=null,frames=[],count=0,acc=0,prevH=null,prevT=0,dir=0,capturing=false,gotOri=false;
 let lastProg=0,timer=null,pitchErr=false,rollErr=false,rate=0,frames2=[],pitchV=0,rollV=0,lastSt='';
+let denseFrames=[],dcand=null,dLastCommit=-1;
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const say=t=>{$('msg').textContent=t};
 // Guidage : couleur du cadre, flèche qui clignote, message court, vibration si problème
@@ -121,6 +122,7 @@ $('begin').onclick=async()=>{
 };
 function prepare(){
   frames=Array(N).fill(null);count=0;acc=0;prevH=null;dir=0;capturing=false;gotOri=false;
+  denseFrames=[];dcand=null;dLastCommit=-1;
   $('ticks').innerHTML='<i></i>'.repeat(N);
   $('go').hidden=false;guide('','','Cadre le véhicule en entier');cand=null;lastCommit=-1;checkRot();
   const ev='ondeviceorientationabsolute' in window?'deviceorientationabsolute':'deviceorientation';
@@ -162,6 +164,29 @@ function snap(v){
   const s=Math.min(1,960/v.videoWidth),c=mk(Math.round(v.videoWidth*s),Math.round(v.videoHeight*s));
   c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c;
 }
+// Capture dense (pour la reconstruction 3D) : résolution plus élevée, mais
+// compressée en JPEG dès qu'une tranche se referme, jamais gardée en canvas
+// brut en mémoire — sinon 120 images en pleine résolution ferait planter
+// beaucoup de téléphones. Fonctionne en parallèle de `frames`, sans y toucher.
+function snapDense(v){
+  const s=Math.min(1,1600/v.videoWidth),c=mk(Math.round(v.videoWidth*s),Math.round(v.videoHeight*s));
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c;
+}
+function commitDense(){
+  if(dcand&&dcand.canvas){
+    const idx=dcand.idx,angle_deg=+(idx*DSTEP).toFixed(1),canvas=dcand.canvas;
+    canvas.toBlob(b=>{if(b)denseFrames.push({index:idx,angle_deg,blob:b})},'image/jpeg',.85);
+  }
+  dLastCommit=dcand?dcand.idx:dLastCommit;
+}
+function trackDense(di,sc){
+  if(!dcand||di!==dcand.idx){
+    if(dcand)commitDense();
+    if(di>=DN)return;
+    dcand={idx:di,score:-1,canvas:null};
+  }
+  if(sc>dcand.score){dcand.score=sc;dcand.canvas=snapDense($('vid'))}
+}
 function put(i,c){
   if(i<0||i>=N||frames[i])return;
   frames[i]=c;count++;lastProg=Date.now();
@@ -177,17 +202,13 @@ function commit(){
   for(let i=lastCommit+1;i<=cand.idx;i++)put(i,cand.canvas);
   lastCommit=Math.max(lastCommit,cand.idx);
 }
-function track(idx){
-  const now=performance.now();
-  if(now-tPrev<90&&cand&&idx===cand.idx)return;
-  tPrev=now;
-  const v=$('vid'),sc=sharp(v);
+function track(idx,sc){
   if(!cand||idx!==cand.idx){
     if(cand)commit();
     if(idx>=N){if(capturing)finish();return}
     cand={idx,score:-1,canvas:null};
   }
-  if(sc>cand.score){cand.score=sc;cand.canvas=snap(v)}
+  if(sc>cand.score){cand.score=sc;cand.canvas=snap($('vid'))}
 }
 const checkRot=()=>{$('rot').hidden=!(!$('cap').hidden&&!capturing&&innerHeight>innerWidth)};
 addEventListener('resize',checkRot);
@@ -224,9 +245,14 @@ function onOri(e){
   const dt=Math.max(1,now-prevT)/1000;prevT=now;rate=.7*rate+.3*Math.abs(d)/dt;
   acc+=d;
   if(!dir&&Math.abs(acc)>4)dir=Math.sign(acc);
-  const p=dir?acc*dir:0,idx=Math.floor(p/STEP);
+  const p=dir?acc*dir:0,idx=Math.floor(p/STEP),didx=Math.floor(p/DSTEP);
   $('pct').textContent='Tour : '+Math.max(0,Math.min(100,Math.round(p/360*100)))+' %';
-  track(Math.max(0,Math.floor(p/STEP)));
+  if(now-tPrev>=70){
+    tPrev=now;
+    const sc=sharp($('vid'));
+    track(Math.max(0,idx),sc);
+    trackDense(Math.max(0,didx),sc);
+  }
   const walk=dir?(dir<0?'▶▶':'◀◀'):'◀ ▶',stalled=Date.now()-lastProg>3500;
   if(pitchErr)guide('bad',pitchV>0?'⬆':'⬇','Téléphone à la verticale');
   else if(rollErr)guide('bad',rollV>0?'↻':'↺','Redresse le téléphone');
@@ -294,23 +320,33 @@ $('export3d').onclick=async()=>{
   try{
     if(!window.JSZip)await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
     const zip=new JSZip(),imgs=zip.folder('images'),meta=[];
-    let real=0;
-    frames.forEach((f,i)=>{
-      if(!f)return;
-      real++;
-      const name='frame_'+String(i).padStart(3,'0')+'.jpg';
-      imgs.file(name,f.toDataURL('image/jpeg',.92).split(',')[1],{base64:true});
-      // angle_deg : estimation basée sur la rotation mesurée par les capteurs
-      // (tranche de 10°), PAS une pose caméra complète (pas de rayon, hauteur, tangage).
-      meta.push({file:'images/'+name,index:i,angle_deg:+(i*STEP).toFixed(1)});
-    });
+    let real=0,totalSlots=N,stepDeg=STEP;
+    if(denseFrames.length){
+      // Capture dense (jusqu'à 120 images, meilleure résolution) : le cas normal.
+      totalSlots=DN;stepDeg=DSTEP;
+      denseFrames.slice().sort((a,b)=>a.index-b.index).forEach(f=>{
+        real++;
+        const name='frame_'+String(f.index).padStart(3,'0')+'.jpg';
+        imgs.file(name,f.blob); // JSZip accepte un Blob directement, pas besoin de re-encoder
+        meta.push({file:'images/'+name,index:f.index,angle_deg:f.angle_deg});
+      });
+    }else{
+      // Repli : capteurs indisponibles pendant la capture, on n'a que les 36 images du spin.
+      frames.forEach((f,i)=>{
+        if(!f)return;
+        real++;
+        const name='frame_'+String(i).padStart(3,'0')+'.jpg';
+        imgs.file(name,f.toDataURL('image/jpeg',.92).split(',')[1],{base64:true});
+        meta.push({file:'images/'+name,index:i,angle_deg:+(i*STEP).toFixed(1)});
+      });
+    }
     zip.file('metadata.json',JSON.stringify({
       project:'autotour',exported_at:new Date().toISOString(),
-      total_slots:N,step_deg:STEP,captured_frames:real,
+      total_slots:totalSlots,step_deg:stepDeg,captured_frames:real,
       note:'angle_deg est une estimation de rotation relative (capteurs), pas une pose caméra complète. Les tranches manquantes ne sont pas incluses (voir captured_frames vs total_slots).',
       frames:meta
     },null,2));
-    info.textContent=real+' images sur '+N+' incluses dans l\u2019export.';
+    info.textContent=real+' images sur '+totalSlots+' incluses dans l\u2019export.';
     const blob=await zip.generateAsync({type:'blob'});
     const file=new File([blob],'autotour-capture.zip',{type:'application/zip'});
     b.textContent='Exporter (test 3D)';b.disabled=false;
