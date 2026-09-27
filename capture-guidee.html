@@ -49,6 +49,7 @@ canvas{display:block;width:100%;height:auto}
 </head>
 <body>
 <div class="page" id="start">
+  <p class="mut" style="margin-bottom:2px"><a href="index.html" style="color:var(--mut);text-decoration:none;font-weight:600;font-size:.9rem">← AutoTour</a></p>
   <h1>Capture guidée</h1>
   <p class="mut">Un tour complet du véhicule, l'application prend les images toute seule.</p>
   <ol>
@@ -74,10 +75,10 @@ canvas{display:block;width:100%;height:auto}
 </div>
 
 <div class="page" id="res" hidden>
-  <h1>Ta visite est prête</h1>
-  <p class="mut">Glisse le doigt pour tourner autour du véhicule.</p>
+  <h1>Le tour est terminé</h1>
+  <p class="mut">Glisse le doigt pour un aperçu. Choisis ensuite ce que tu veux en faire — les deux sont indépendants, pas besoin de faire l'un pour avoir l'autre.</p>
   <div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas></div>
-  <button class="main" id="save">Enregistrer la visite</button>
+  <button class="main" id="save">Enregistrer le spin 360°</button>
   <button id="export3d">Exporter (test 3D)</button>
   <button id="again">Refaire un tour</button>
   <p class="mut" id="exportInfo" style="font-size:.9rem;margin-top:8px"></p>
