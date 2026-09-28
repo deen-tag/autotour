@@ -1,64 +1,7 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AutoTour — Vue 3D</title>
-<style>
-:root{
-  --bg:#f4f6fb;--panel:#ffffff;--fg:#0f1729;--mut:#5f6b85;--line:#e1e6f0;
-  --acc:#2f6feb;--accfg:#ffffff;--shadow:0 1px 2px rgba(15,23,41,.04),0 10px 24px -12px rgba(15,23,41,.12);
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}}
-:root[data-theme="dark"]{--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-[hidden]{display:none!important}
-.page{max-width:520px;margin:0 auto;padding:22px 18px 40px}
-.back{display:inline-flex;color:var(--mut);text-decoration:none;font-weight:600;font-size:.86rem;margin-bottom:14px}
-h1{margin:0 0 8px;font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
-p{margin:0 0 12px}.mut{color:var(--mut)}
-button,label.btn{font:inherit;font-weight:700;border-radius:11px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);display:inline-block;transition:transform .12s ease}
-button.main,label.btn.main{background:var(--acc);color:var(--accfg);box-shadow:0 6px 18px -8px rgba(47,111,235,.55)}
-button:active,label.btn:active{transform:scale(.97)}
-button:focus-visible,label.btn:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
-input[type=file]{display:none}
-#drop{border:2px dashed var(--line);border-radius:16px;padding:34px 16px;text-align:center;margin:18px 0;background:var(--panel);box-shadow:var(--shadow)}
-#stage{position:fixed;inset:0;background:#070b16;display:none}
-#stage.on{display:block}
-#stage canvas{display:block;width:100%;height:100%}
-#back{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:2;color:#fff;border-color:rgba(255,255,255,.35);padding:8px 14px}
-#status{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);text-align:center;color:#fff;font-weight:600;text-shadow:0 1px 4px #000;pointer-events:none}
-#err{color:#dc2626;font-weight:600;margin-top:14px;white-space:pre-wrap;background:rgba(220,38,38,.08);border-radius:10px;padding:10px 12px}
-</style>
-</head>
-<body>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoTour Studio — Viewer 3D</title><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script><script src="https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.1/build/gaussian-splats-3d.umd.cjs"></script><style>
+:root{--bg:#07090d;--panel:#0d1219;--line:#252e3e;--text:#f7f9fc;--muted:#8995a8;--blue:#7582ff;--cyan:#48e5d2}*{box-sizing:border-box}body{margin:0;background:radial-gradient(900px 500px at 70% 0,rgba(109,124,255,.13),transparent 60%),var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{max-width:1280px;margin:auto;padding:24px 20px 50px}.top{height:54px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:850}.brand em{font-style:normal;color:#7c87ff}.back{color:#7d889b;text-decoration:none}.hero{margin:44px 0 24px}.eyebrow{color:#78859a;text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:800}.eyebrow i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-right:7px}h1{font-size:48px;line-height:1;letter-spacing:-.055em;margin:9px 0}.hero p{color:var(--muted);max-width:680px}.panel{border:1px solid var(--line);background:linear-gradient(180deg,#0e141d,#0b1017);border-radius:22px;overflow:hidden}.drop{padding:22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}.btn{border:0;border-radius:12px;padding:12px 16px;background:linear-gradient(135deg,#96a0ff,#58e3d3);color:#080b10;font-weight:850;cursor:pointer}.sub{color:#778398;font-size:11px}.stage{height:min(70vh,700px);position:relative;background:#05070a}.stage #back{position:absolute;z-index:5;left:18px;top:18px;border:1px solid #293448;background:rgba(8,11,16,.7);color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;display:none}.stage #status{position:absolute;z-index:4;right:18px;top:18px;background:rgba(8,11,16,.7);border:1px solid #293448;border-radius:10px;padding:8px 10px;color:#9ba7ba;font-size:10px}.err{padding:0 22px 18px;color:#ff858c;font-size:11px}.tip{padding:15px 22px;border-top:1px solid var(--line);color:#667286;font-size:10px}@media(max-width:800px){h1{font-size:38px}.drop{display:block}.drop .sub{margin-top:8px}}
+</style></head><body><div class="wrap"><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="hero"><div class="eyebrow"><i></i>Modèle 3D du véhicule</div><h1>Explore la voiture en vraie 3D.</h1><p>Charge la reconstruction produite par AutoTour pour inspecter le véhicule, ses volumes et ses détails directement dans le navigateur.</p></div><section class="panel"><div class="drop"><div><b>Ouvrir la présentation 3D</b><div class="sub">Format .PLY · reconstruction du véhicule</div></div><label class="btn" for="file">Choisir un fichier .PLY</label><input type="file" id="file" accept=".ply" hidden></div><p class="err" id="err"></p><div id="stage"><button id="back">← Retour</button><div id="status"></div></div><div class="tip">Le viewer affiche directement la reconstruction fournie pour permettre une inspection libre du véhicule.</div><div id="start" hidden><p class="mut" id="or"></p><p class="mut" id="urlInfo" hidden></p></div></section></div><script>
 
-<div class="page" id="start">
-  <a class="back" href="index.html">← AutoTour</a>
-  <h1>AutoTour — Vue 3D</h1>
-  <p class="mut">Viewer de test : ouvre un modèle Gaussian Splatting (.ply) produit par le pipeline de reconstruction.</p>
-  <div id="drop">
-    <p>Choisis le fichier <code>.ply</code> exporté depuis le notebook de reconstruction.</p>
-    <label class="btn main" for="file">Choisir un fichier .ply</label>
-    <input type="file" id="file">
-  </div>
-  <p class="mut" id="or" hidden>— ou —</p>
-  <p class="mut" id="urlInfo" hidden>Chargement depuis l'URL fournie (<code>?model=</code>)…</p>
-  <p id="err"></p>
-  <p class="mut">Rotation : glisser. Zoom : pincer ou molette. Aucune retouche n'est appliquée au modèle : ce que tu vois est exactement le résultat de la reconstruction.</p>
-</div>
-
-<div id="stage">
-  <button id="back">← Retour</button>
-  <div id="status"></div>
-</div>
-
-<!-- three.js (build compatible avec GaussianSplats3D) puis GaussianSplats3D (MIT) -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mkkellogg/gaussian-splats-3d@0.4.1/build/gaussian-splats-3d.umd.cjs"></script>
-<script>
 const $=id=>document.getElementById(id);
 let viewer=null;
 
@@ -117,6 +60,4 @@ $('back').onclick=()=>location.reload();
     openModel(p,false);
   }
 })();
-</script>
-</body>
-</html>
+</script></body></html>

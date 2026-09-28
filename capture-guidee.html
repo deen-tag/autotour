@@ -1,111 +1,17 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Capture guidée 360°</title>
-<style>
-:root{
-  --bg:#f4f6fb;--panel:#ffffff;--fg:#0f1729;--mut:#5f6b85;--line:#e1e6f0;
-  --acc:#2f6feb;--acc2:#1c4fc4;--accfg:#ffffff;--radius:14px;
-  --shadow:0 1px 2px rgba(15,23,41,.04),0 10px 24px -12px rgba(15,23,41,.12);
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--acc2:#7aa2ff;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}}
-:root[data-theme="dark"]{--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--acc2:#7aa2ff;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-[hidden]{display:none!important}
-.page{max-width:520px;margin:0 auto;padding:22px 18px 40px}
-.back{display:inline-flex;align-items:center;gap:6px;color:var(--mut);text-decoration:none;font-weight:600;font-size:.86rem;margin-bottom:14px}
-h1{margin:0 0 8px;font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
-p{margin:0 0 12px}.mut{color:var(--mut)}
-.intro{margin-bottom:22px;max-width:44ch}
-.tips{list-style:none;margin:0 0 24px;padding:0;display:grid;gap:10px}
-.tips li{display:flex;gap:12px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
-.tips .num{flex:none;width:26px;height:26px;border-radius:8px;background:var(--acc);color:var(--accfg);display:grid;place-items:center;font-weight:800;font-size:.85rem}
-.tips span{font-size:.93rem;color:var(--fg)}
-button{font:inherit;font-weight:700;border-radius:11px;padding:13px 20px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);transition:transform .12s ease}
-button.main{background:var(--acc);color:var(--accfg);border-color:var(--acc);box-shadow:0 6px 18px -8px rgba(47,111,235,.55)}
-button:active{transform:scale(.97)}
-button:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
-#err{color:#dc2626;font-weight:600;margin-top:14px;background:rgba(220,38,38,.08);border-radius:10px;padding:10px 12px}
-/* capture */
-#cap{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden}
-#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.frame{position:absolute;left:8%;right:8%;top:36%;bottom:30%;border:2px dashed rgba(255,255,255,.75);border-radius:16px}
-.frame.ok{border-color:#4ade80;border-style:solid}.frame.warn{border-color:#ffb020;border-style:solid}.frame.bad{border-color:#ff5a5a;border-style:solid}
-.arrow{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 66px);text-align:center;font-size:52px;line-height:1;text-shadow:0 2px 8px #000;pointer-events:none}
-.arrow.ok{color:#4ade80}.arrow.warn{color:#ffb020}.arrow.bad{color:#ff5a5a}
-.arrow.blink{animation:bl .9s ease-in-out infinite}
-@keyframes bl{50%{opacity:.25}}
-@media (prefers-reduced-motion:reduce){.arrow.blink{animation:none}}
-.rot{position:absolute;left:16px;right:16px;top:44%;background:rgba(0,0,0,.7);padding:14px;border-radius:12px;font-weight:600;text-align:center}
-#res button{margin:0 8px 8px 0}
-.hz{position:absolute;left:10%;right:10%;top:50%;height:3px;border-radius:2px;background:#ff6b6b;transition:background .2s}
-.hz.ok{background:#5cc3d6}
-.msg{position:absolute;left:16px;right:70px;top:calc(env(safe-area-inset-top,0px) + 14px);background:rgba(0,0,0,.6);padding:10px 14px;border-radius:12px;font-weight:600}
-.pct{position:absolute;left:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 102px);font-weight:700;text-shadow:0 1px 4px #000}
-.ticks{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 86px);display:flex;gap:2px}
-.ticks i{flex:1;height:8px;background:rgba(255,255,255,.3);border-radius:2px}
-.ticks i.on{background:#5cc3d6}
-#go{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 22px)}
-#stop{position:absolute;right:12px;top:calc(env(safe-area-inset-top,0px) + 14px);padding:8px 12px;color:#fff;border-color:rgba(255,255,255,.6)}
-#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .25s}
-/* résultat */
-.result-actions{display:grid;gap:10px;margin-top:4px}
-.stage{position:relative;background:#1a1f2b;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;border-radius:16px;overflow:hidden;margin-bottom:18px;box-shadow:var(--shadow)}
-.stage:focus-visible{outline:3px solid var(--acc)}
-canvas{display:block;width:100%;height:auto}
-.spin-tag{position:absolute;left:12px;bottom:12px;background:rgba(10,15,28,.65);color:#fff;font-size:.78rem;font-weight:700;padding:5px 10px;border-radius:99px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
-</style>
-</head>
-<body>
-<div class="page" id="start">
-  <a class="back" href="index.html">← AutoTour</a>
-  <h1>Capture guidée</h1>
-  <p class="mut intro">Un tour complet du véhicule en une seule marche — l'appli te guide et prend les images toute seule.</p>
-  <ul class="tips">
-    <li><span class="num">1</span><span>Tiens le téléphone droit, à hauteur de poitrine, à 3 ou 4 mètres du véhicule.</span></li>
-    <li><span class="num">2</span><span>Garde le véhicule entier dans le cadre et marche lentement autour.</span></li>
-    <li><span class="num">3</span><span>Une image est prise tous les 10° pour l'aperçu (et tous les 3° en arrière-plan pour la 3D) — l'appli te dit quand ralentir ou continuer.</span></li>
-  </ul>
-  <button class="main" id="begin">Ouvrir la caméra</button>
-  <p id="err"></p>
-</div>
-
-<div id="cap" hidden>
-  <video id="vid" playsinline muted autoplay></video>
-  <div class="frame" id="frame"></div><div class="hz" id="hz"></div>
-  <div class="arrow" id="arrow"></div>
-  <div class="rot" id="rot" hidden>↻ Tourne le téléphone en paysage pour un meilleur résultat</div>
-  <div class="msg" id="msg">Cadre le véhicule en entier</div>
-  <button id="stop">Annuler</button>
-  <div class="pct" id="pct"></div>
-  <div class="ticks" id="ticks"></div>
-  <button class="main" id="go">Démarrer le tour</button>
-  <div id="flash"></div>
-</div>
-
-<div class="page" id="res" hidden>
-  <h1>Le tour est terminé</h1>
-  <p class="mut intro">Glisse le doigt pour un aperçu. Choisis ensuite ce que tu veux en faire — les deux sont indépendants, pas besoin de faire l'un pour avoir l'autre.</p>
-  <div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas><span class="spin-tag">360°</span></div>
-  <div class="result-actions">
-    <button class="main" id="save">Enregistrer le spin 360°</button>
-    <button id="export3d">Exporter (test 3D)</button>
-    <button id="again">Refaire un tour</button>
-  </div>
-  <p class="mut" id="exportInfo" style="font-size:.9rem;margin-top:10px"></p>
-</div>
-
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>AutoTour Studio — Capture</title><style>
+:root{--bg:#07090d;--panel:#0d1219;--line:#242d3d;--text:#f7f9fc;--muted:#8995a8;--blue:#7582ff;--cyan:#48e5d2;--danger:#ff5964;--ok:#48e5a6}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button{font:inherit}.page{min-height:100vh;max-width:880px;margin:auto;padding:42px 22px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:46px}.brand{font-weight:850;letter-spacing:-.03em}.brand em{font-style:normal;color:#7c87ff}.back{color:#788397;text-decoration:none}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#758197;font-weight:800}.eyebrow i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);margin-right:7px}h1{font-size:clamp(36px,6vw,64px);line-height:.95;letter-spacing:-.06em;margin:11px 0 12px}.intro{color:var(--muted);max-width:600px;font-size:15px}.guide{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:34px}.panel{background:linear-gradient(180deg,#0f151f,#0b1017);border:1px solid var(--line);border-radius:22px;padding:22px}.tips{display:grid;gap:10px}.tip{display:grid;grid-template-columns:38px 1fr;gap:13px;align-items:center;padding:14px;border:1px solid #202a39;border-radius:14px;background:#0a0f16}.num{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#151d2a;color:#8c98ff;font-weight:850}.tip b{font-size:13px}.tip span{display:block;color:#7f8a9d;font-size:11px;margin-top:3px}.primary{width:100%;border:0;border-radius:14px;padding:16px;background:linear-gradient(135deg,#96a0ff,#58e3d3);font-weight:850;color:#080b10;cursor:pointer;margin-top:18px}.micro{margin-top:12px;color:#657185;font-size:11px;text-align:center}#err{color:#ff7b83;font-weight:650;margin-top:14px}.capture{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden;z-index:20}#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.frame{position:absolute;left:8%;right:8%;top:29%;bottom:26%;border:2px dashed rgba(255,255,255,.65);border-radius:22px}.frame.ok{border-color:#48e5a6;border-style:solid}.frame.warn{border-color:#ffb020;border-style:solid}.frame.bad{border-color:#ff5964;border-style:solid}.arrow{position:absolute;left:0;right:0;top:90px;text-align:center;font-size:48px;text-shadow:0 2px 10px #000}.arrow.ok{color:#48e5a6}.arrow.warn{color:#ffb020}.arrow.bad{color:#ff5964}.rot{position:absolute;left:16px;right:16px;top:46%;background:rgba(5,8,12,.72);padding:14px;border-radius:14px;text-align:center;font-weight:700;backdrop-filter:blur(12px)}.msg{position:absolute;left:18px;right:110px;top:18px;background:rgba(5,8,12,.7);padding:11px 14px;border-radius:13px;font-weight:700;backdrop-filter:blur(12px)}#stop{position:absolute;right:18px;top:18px;padding:10px 14px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:rgba(5,8,12,.6);color:#fff}.pct{position:absolute;left:18px;bottom:140px;font-weight:800}.ticks{position:absolute;left:18px;right:18px;bottom:119px;display:flex;gap:2px}.ticks i{flex:1;height:7px;border-radius:3px;background:rgba(255,255,255,.25)}.ticks i.on{background:#5fe1d3}.speed{position:absolute;left:18px;right:18px;bottom:175px;background:rgba(5,8,12,.7);border-radius:14px;padding:11px 14px;backdrop-filter:blur(12px)}.speed-top{display:flex;justify-content:space-between;margin-bottom:8px}.gauge{height:9px;display:flex;border-radius:8px;overflow:hidden}.gauge i{flex:1}.gauge i:nth-child(1){background:#6477ff}.gauge i:nth-child(2){background:#48e5a6}.gauge i:nth-child(3){background:#ffb020}.gauge i:nth-child(4){background:#ff5964}.gauge u{position:absolute;width:4px;height:19px;background:#fff;margin-top:-5px;text-decoration:none}.speed-sub{font-size:10px;opacity:.65;margin-top:6px}.dens{position:absolute;left:18px;right:18px;bottom:88px;width:calc(100% - 36px);height:7px}.main{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;border:0;border-radius:14px;padding:14px 24px;background:linear-gradient(135deg,#96a0ff,#58e3d3);color:#080b10;font-weight:850;box-shadow:0 10px 35px rgba(0,0,0,.35)}#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.result{max-width:1100px}.result h2{font-size:30px;letter-spacing:-.04em;margin:0}.result-intro{color:var(--muted);max-width:620px}.stage{position:relative;background:#090d13;border:1px solid var(--line);border-radius:22px;overflow:hidden;margin:28px 0 14px;cursor:grab}.stage canvas{display:block;width:100%;height:auto}.spin-tag{position:absolute;left:14px;bottom:14px;padding:7px 10px;border-radius:99px;background:rgba(5,8,12,.72);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aab4c4}.actions{display:flex;gap:10px;flex-wrap:wrap}.actions button{border:1px solid #2b3548;background:#111722;color:#eef2f8;padding:13px 17px;border-radius:12px;font-weight:750}.actions .main{position:static;transform:none;background:linear-gradient(135deg,#96a0ff,#58e3d3);color:#080b10;border:0}.prep .bar{height:7px;background:#1d2634;border-radius:5px;overflow:hidden}.prep .bar i{display:block;width:0;height:100%;background:#6f7dff}.cov{display:grid;gap:7px;margin:12px 0}.cov p{padding:9px 12px;border-radius:10px;border:1px solid #222d3d;color:#8f9aac;font-size:11px;margin:0}.cov p.good{border-color:#236b58;color:#73d9bb}.cov p.warn{border-color:#6c5425;color:#f0c978}.cov p.bad{border-color:#6d2d34;color:#ff8b93}.mut{color:var(--muted);font-size:11px}@media(max-width:800px){.guide{grid-template-columns:1fr}.page{padding-top:24px}}
+</style></head><body>
+<div class="page" id="start"><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="eyebrow"><i></i>Capture du véhicule</div><h1>Un tour. Une présentation 3D.</h1><p class="intro">Filme simplement la voiture avec ton téléphone. AutoTour prépare les vues nécessaires pour créer une présentation immersive, pensée pour enrichir ton annonce.</p><div class="guide"><section class="panel"><div class="tips"><div class="tip"><div class="num">01</div><div><b>Cadre toute la voiture</b><span>Garde le véhicule entier dans le cadre, téléphone à hauteur de poitrine.</span></div></div><div class="tip"><div class="num">02</div><div><b>Fais le tour du véhicule</b><span>Un tour complet et fluide permet de montrer la voiture sous tous ses angles.</span></div></div><div class="tip"><div class="num">03</div><div><b>Garde un mouvement fluide</b><span>Le guidage t’aide à obtenir une couverture régulière et exploitable.</span></div></div></div><button class="primary" id="begin">Ouvrir la caméra <span>→</span></button><div class="micro">Caméra utilisée uniquement pendant la capture · aucun compte nécessaire</div><p id="err"></p></section><section class="panel" style="display:grid;place-items:center;min-height:300px;background:radial-gradient(circle at 50% 50%,rgba(109,124,255,.14),transparent 55%),#0a0f16"><div style="text-align:center"><div style="font-size:70px;line-height:1;margin-bottom:15px">◉</div><b style="font-size:15px">Présentation prête pour l’annonce</b><p class="mut">Le guidage t’accompagne pour capturer les angles importants du véhicule.</p></div></section></div></div>
+<div id="cap" class="capture" hidden><video id="vid" playsinline muted autoplay></video><div class="frame" id="frame"></div><div class="hz" id="hz"></div><div class="arrow" id="arrow"></div><div class="rot" id="rot" hidden>↻ Tourne le téléphone en paysage pour un meilleur résultat</div><div class="msg" id="msg">Cadre le véhicule en entier</div><button id="stop">Quitter</button><div class="pct" id="pct"></div><div class="ticks" id="ticks"></div><canvas class="dens" id="dens" width="180" height="10" hidden></canvas><div class="speed" id="speed" hidden><div class="speed-top"><b id="speedLbl">Démarre doucement</b><span id="speedVal"></span></div><div class="gauge"><i></i><i></i><i></i><i></i><u id="needle" style="left:0%"></u></div><div class="speed-sub">Rythme cible : environ 40 s pour un tour complet</div></div><button class="main" id="go">Démarrer le tour</button><div id="flash"></div></div>
+<div class="page result" id="res" hidden><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="eyebrow"><i></i>Rendu généré</div><h2>Ton véhicule, prêt à être présenté.</h2><p class="result-intro">Fais tourner l'aperçu pour vérifier la couverture. Tu peux enregistrer le spin ou envoyer les images vers le pipeline 3D.</p><div class="prep" id="prep" hidden><span id="prepTxt"></span><div class="bar"><i id="prepBar"></i></div></div><div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas><span class="spin-tag">360° interactif</span></div><div class="cov" id="cov"></div><div class="actions"><button class="main" id="save">Enregistrer la présentation 360°</button><button id="export3d">Créer le modèle 3D</button><button id="again">Nouvelle capture</button></div><p class="mut" id="exportInfo" style="margin-top:12px"></p></div>
 <script>
+
 const $=id=>document.getElementById(id);
-const N=36,STEP=360/N,DSTEP=3,DN=Math.round(360/DSTEP);
+const N=36,STEP=360/N,DSTEP=2,DN=Math.round(360/DSTEP); // aperçu : 36 x 10° ; capture dense : 180 x 2°
+const SAMPLE_MS=40,SLOW=5,FAST=15,VFAST=25,IDEAL_S=40; // analyse toutes les 40 ms ; vitesses en °/s
 let stream=null,frames=[],count=0,acc=0,prevH=null,prevT=0,dir=0,capturing=false,gotOri=false;
-let lastProg=0,timer=null,pitchErr=false,rollErr=false,rate=0,frames2=[],pitchV=0,rollV=0,lastSt='';
-let denseFrames=[],dcand=null,dLastCommit=-1;
+let lastProg=0,timer=null,pitchErr=false,rollErr=false,rate=0,rateS=0,zone='ok',vList=[],VNS=DN,vDraw=null,runId=0,pitchV=0,rollV=0,lastSt='';
+let denseFrames=[],dcand=null,dLastCommit=-1,lastSkip=0,dstat=new Uint8Array(DN),pending=0,dbuf=null;
 const mk=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c};
 const say=t=>{$('msg').textContent=t};
 // Guidage : couleur du cadre, flèche qui clignote, message court, vibration si problème
@@ -138,7 +44,7 @@ $('begin').onclick=async()=>{
 };
 function prepare(){
   frames=Array(N).fill(null);count=0;acc=0;prevH=null;dir=0;capturing=false;gotOri=false;
-  denseFrames=[];dcand=null;dLastCommit=-1;
+  denseFrames=[];dcand=null;dLastCommit=-1;lastSkip=0;dstat=new Uint8Array(DN);pending=0;rateS=0;zone='ok';runId++;showLive(false);
   $('ticks').innerHTML='<i></i>'.repeat(N);
   $('go').hidden=false;guide('','','Cadre le véhicule en entier');cand=null;lastCommit=-1;checkRot();
   const ev='ondeviceorientationabsolute' in window?'deviceorientationabsolute':'deviceorientation';
@@ -147,7 +53,7 @@ function prepare(){
 }
 $('stop').onclick=()=>cleanup(true);
 function cleanup(back){
-  capturing=false;clearInterval(timer);
+  capturing=false;clearInterval(timer);showLive(false);
   window.removeEventListener(window._ev,onOri);
   window.removeEventListener('devicemotion',onMotion);
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
@@ -157,7 +63,8 @@ function cleanup(back){
 /* ---------- Le tour ---------- */
 $('go').onclick=()=>{
   $('go').hidden=true;capturing=true;prevH=null;acc=0;dir=0;lastProg=Date.now();cand=null;lastCommit=-1;checkRot();
-  guide('ok','◀ ▶','C\u2019est parti, marche lentement autour du véhicule');
+  showLive(true);drawDens();
+  guide('ok','◀ ▶','C\u2019est parti : un tour complet en environ '+IDEAL_S+' secondes');
   setTimeout(()=>{ // pas de capteur : une image toutes les 1,2 s
     if(capturing&&!gotOri){
       say('Capteurs indisponibles : une image toutes les 1,2 s. Marche régulièrement.');
@@ -185,23 +92,54 @@ function snap(v){
 // brut en mémoire — sinon 120 images en pleine résolution ferait planter
 // beaucoup de téléphones. Fonctionne en parallèle de `frames`, sans y toucher.
 function snapDense(v){
-  const s=Math.min(1,1600/v.videoWidth),c=mk(Math.round(v.videoWidth*s),Math.round(v.videoHeight*s));
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);return c;
+  // Buffer réutilisé (toBlob prend une copie immédiate) : évite d'allouer ~6 Mo à chaque échantillon.
+  const k=Math.min(1,1600/v.videoWidth),w=Math.round(v.videoWidth*k),h=Math.round(v.videoHeight*k);
+  if(!dbuf||dbuf.width!==w||dbuf.height!==h)dbuf=mk(w,h);
+  dbuf.getContext('2d').drawImage(v,0,0,w,h);return dbuf;
 }
 function commitDense(){
   if(dcand&&dcand.canvas){
-    const idx=dcand.idx,angle_deg=+(idx*DSTEP).toFixed(1),canvas=dcand.canvas;
-    canvas.toBlob(b=>{if(b)denseFrames.push({index:idx,angle_deg,blob:b})},'image/jpeg',.85);
+    const idx=dcand.idx,angle_deg=+(idx*DSTEP).toFixed(1),canvas=dcand.canvas,score=dcand.score;
+    dstat[idx]=1;
+    // Une seule image par tranche : si la tranche a déjà été enregistrée (angle qui oscille), on garde la plus nette.
+    pending++;
+    canvas.toBlob(b=>{pending--;if(!b)return;const k=denseFrames.findIndex(f=>f.index===idx);
+      if(k<0)denseFrames.push({index:idx,angle_deg,blob:b,score});
+      else if(score>denseFrames[k].score)denseFrames[k]={index:idx,angle_deg,blob:b,score}},'image/jpeg',.85);
+    dcand.canvas=null;drawDens();
   }
   dLastCommit=dcand?dcand.idx:dLastCommit;
 }
 function trackDense(di,sc){
   if(!dcand||di!==dcand.idx){
+    if(dcand&&di-dcand.idx>1){lastSkip=Date.now();for(let j=dcand.idx+1;j<di&&j<DN;j++)if(!dstat[j])dstat[j]=2} // tranches sautées
     if(dcand)commitDense();
     if(di>=DN)return;
     dcand={idx:di,score:-1,canvas:null};
   }
   if(sc>dcand.score){dcand.score=sc;dcand.canvas=snapDense($('vid'))}
+}
+// Bandeau live : une case par tranche de 2° (vert = capturée, rouge = sautée)
+function drawDens(){
+  const c=$('dens');if(!c||c.hidden)return;const g=c.getContext('2d');
+  g.clearRect(0,0,DN,10);
+  for(let i=0;i<DN;i++){if(!dstat[i])continue;g.fillStyle=dstat[i]===1?'#4ade80':'#ff5a5a';g.fillRect(i,0,1,10)}
+}
+function showLive(on){$('speed').hidden=!on;$('dens').hidden=!on}
+// Zone de vitesse avec hystérésis (évite le clignotement autour d'un seuil)
+function speedZone(r,z){
+  if(z==='vfast')return r>VFAST-2?'vfast':(r>FAST?'fast':'ok');
+  if(z==='fast')return r>VFAST?'vfast':(r>FAST-1.5?'fast':'ok');
+  if(z==='slow')return r>SLOW+1?'ok':'slow';
+  return r>VFAST?'vfast':r>FAST?'fast':r<SLOW?'slow':'ok';
+}
+function updateGauge(){
+  const lab=$('speedLbl'),c={slow:'#8fb0ff',ok:'#4ade80',fast:'#ffb020',vfast:'#ff5a5a'};
+  const t={slow:'Un peu trop lent',ok:'Bonne vitesse',fast:'Trop vite',vfast:'Beaucoup trop vite'};
+  const started=dir&&Math.abs(acc)>10;
+  lab.textContent=started?t[zone]:'Démarre doucement';lab.style.color=started?c[zone]:'#fff';
+  $('speedVal').textContent=started?Math.round(rateS)+' °/s':'';
+  $('needle').style.left=Math.min(100,Math.max(0,rateS/30*100))+'%';
 }
 function put(i,c){
   if(i<0||i>=N||frames[i])return;
@@ -258,85 +196,213 @@ function onOri(e){
   const now=performance.now();
   if(prevH==null){prevH=h;prevT=now;return}
   let d=((h-prevH+540)%360)-180;prevH=h;
-  const dt=Math.max(1,now-prevT)/1000;prevT=now;rate=.7*rate+.3*Math.abs(d)/dt;
+  const dt=Math.max(1,now-prevT)/1000;prevT=now;rateS=.94*rateS+.06*(Math.abs(d)/dt);
   acc+=d;
   if(!dir&&Math.abs(acc)>4)dir=Math.sign(acc);
-  const p=dir?acc*dir:0,idx=Math.floor(p/STEP),didx=Math.floor(p/DSTEP);
-  $('pct').textContent='Tour : '+Math.max(0,Math.min(100,Math.round(p/360*100)))+' %';
-  if(now-tPrev>=70){
+  const p=dir?acc*dir:Math.abs(acc),idx=Math.floor(p/STEP),didx=Math.floor(p/DSTEP);
+  {let got=0,miss=0;for(let i=0;i<DN;i++){if(dstat[i]===1)got++;else if(dstat[i]===2)miss++}
+  $('pct').textContent='Tour : '+Math.max(0,Math.min(100,Math.round(p/360*100)))+' %  ·  '+got+' images'+(miss?'  ·  '+miss+' sautées':'');}
+  if(now-tPrev>=SAMPLE_MS-8){ // tolérance : un capteur à 60 Hz livre un événement toutes les 16,7 ms, sans elle on tomberait à 50 ms
     tPrev=now;
     const sc=sharp($('vid'));
     track(Math.max(0,idx),sc);
     trackDense(Math.max(0,didx),sc);
   }
   const walk=dir?(dir<0?'▶▶':'◀◀'):'◀ ▶',stalled=Date.now()-lastProg>3500;
+  zone=speedZone(rateS,zone);updateGauge();
   if(pitchErr)guide('bad',pitchV>0?'⬆':'⬇','Téléphone à la verticale');
   else if(rollErr)guide('bad',rollV>0?'↻':'↺','Redresse le téléphone');
-  else if(rate>45)guide('warn','⏸','Plus lentement');
+  else if(dir&&zone==='vfast')guide('bad','⏸','Beaucoup trop vite — ralentis');
+  else if(dir&&zone==='fast')guide('warn','⏸','Trop vite — ralentis');
+  else if(Date.now()-lastSkip<1500)guide('warn','⏸','Des angles ont été sautés — ralentis');
   else if(dir&&p<-15)guide('warn',walk,'Tourne dans l\u2019autre sens');
   else if(stalled)guide('warn',walk,'Continue à tourner');
-  else guide('ok',walk,'Bien, continue');
+  else if(dir&&p>15&&zone==='slow')guide('slow',walk,'Un peu trop lent — avance un peu plus vite');
+  else guide('ok',walk,dir?'Parfait, garde cette vitesse':'Bien, continue');
+}
+
+/* ---------- Viewer par angles réels ---------- */
+// list : [{s:tranche, img}] triée par tranche. NS : nombre de tranches sur 360°.
+// BIG : au-delà de BIG images manquantes d'affilée, on n'invente rien (pas de fondu, le saut reste visible).
+// Fonction autonome (aucune variable externe) : elle est recopiée telle quelle dans la visite enregistrée.
+function makeSlotViewer(g,list,NS,BIG){
+  const n=list.length,at=new Int16Array(NS).fill(-1),prev=new Int16Array(NS),next=new Int16Array(NS);
+  list.forEach((f,i)=>{at[f.s]=i});
+  let p=n-1;for(let s=0;s<NS;s++){if(at[s]>=0)p=at[s];prev[s]=p}
+  let q=0;for(let s=NS-1;s>=0;s--){if(at[s]>=0)q=at[s];next[s]=q}
+  let lastKey='';
+  return function(pos,force){
+    if(!n)return;
+    const P=((pos%NS)+NS)%NS,s0=Math.floor(P),ia=prev[s0],A=list[ia];
+    let ib=ia,mode=0,alpha=0; // 0 : image A seule ; 1 : fondu A vers B ; 2 : image B seule (grand trou)
+    if(!(at[s0]>=0&&P-s0<1e-6)){
+      ib=at[s0]>=0?next[(s0+1)%NS]:next[s0];
+      const B=list[ib],gap=((B.s-A.s+NS)%NS)||NS,u=(((P-A.s)%NS+NS)%NS)/gap;
+      if(ib===ia)mode=0;
+      else if(gap-1>BIG)mode=u<.5?0:2;
+      else if(u>=.03){mode=1;alpha=u}
+    }
+    const key=ia+'_'+ib+'_'+mode+'_'+Math.round(alpha*15);
+    if(key===lastKey&&!force)return;lastKey=key;
+    g.globalAlpha=1;
+    if(mode===2){g.drawImage(list[ib].img,0,0);return}
+    g.drawImage(A.img,0,0);
+    if(mode===1){g.globalAlpha=alpha;g.drawImage(list[ib].img,0,0);g.globalAlpha=1}
+  };
+}
+
+/* ---------- Préparation du viewer ---------- */
+const VIEW_W=800,BIG_HOLE=5;   // viewer en 800 px ; trous de plus de 5 images (10°) jamais masqués
+const sleep=()=>new Promise(r=>requestAnimationFrame(()=>r()));
+function prog(done,total,label){$('prep').hidden=false;$('prepTxt').textContent=label+' : '+done+' / '+total;$('prepBar').style.width=(total?done/total*100:0)+'%'}
+function median(a){const b=a.slice().sort((x,y)=>x-y),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2}
+// Écarte du viewer (jamais de l'export 3D) les images nettement plus floues que leurs voisines
+function pickViewerFrames(all){
+  const sorted=all.slice().sort((a,b)=>a.index-b.index),keep=[],blurry=[];
+  sorted.forEach(f=>{
+    const nb=sorted.filter(g=>Math.abs(g.index-f.index)<=8).map(g=>g.score);
+    (f.score<.4*median(nb)?blurry:keep).push(f);
+  });
+  return keep.length>=20?{keep,blurry}:{keep:sorted,blurry:[]};
+}
+async function decodeTo(blob,W){
+  let bmp=null,src,w,h,url=null;
+  try{bmp=await createImageBitmap(blob)}catch(e){}
+  if(bmp){src=bmp;w=bmp.width;h=bmp.height}
+  else{url=URL.createObjectURL(blob);src=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});w=src.naturalWidth;h=src.naturalHeight}
+  const k=Math.min(1,W/w),c=mk(Math.round(w*k),Math.round(h*k));
+  c.getContext('2d').drawImage(src,0,0,c.width,c.height);
+  if(bmp)bmp.close();if(url)URL.revokeObjectURL(url);
+  return c;
+}
+function gray(c){ // petite version en niveaux de gris de la zone centrale, pour mesurer le tremblement
+  const w=160,h=90,t=mk(w,h),x=t.getContext('2d',{willReadFrequently:true});
+  x.drawImage(c,c.width*.15,c.height*.15,c.width*.7,c.height*.7,0,0,w,h);
+  const d=x.getImageData(0,0,w,h).data,g=new Float32Array(w*h);
+  for(let i=0;i<w*h;i++)g[i]=.3*d[i*4]+.59*d[i*4+1]+.11*d[i*4+2];
+  return g;
+}
+// Stabilisation sur place (une seule copie en mémoire) : on ne corrige que le tremblement, pas le mouvement lent.
+async function stabilizeInPlace(items,G,my){
+  const n=items.length;if(n<4)return;
+  const w=160,h=90,R=7;
+  const shift=(a,b)=>{let best=1e18,bx=0,by=0;
+    for(let dy=-R;dy<=R;dy++)for(let dx=-R;dx<=R;dx++){
+      let sum=0,k=0;
+      for(let y=R;y<h-R;y+=2)for(let x=R;x<w-R;x+=2){const v=a[y*w+x]-b[(y+dy)*w+x+dx];sum+=v<0?-v:v;k++}
+      sum/=k;if(sum<best){best=sum;bx=dx;by=dy}
+    }
+    return[bx,by]};
+  const cx=[0],cy=[0];
+  for(let i=1;i<n;i++){
+    const[dx,dy]=shift(G[i-1],G[i]);cx.push(cx[i-1]+dx);cy.push(cy[i-1]+dy);
+    if(i%12===0){prog(i,n,'Stabilisation');await sleep();if(my!==runId)return}
+  }
+  const half=Math.max(2,Math.round(n/16)),sm=a=>a.map((_,i)=>{let sum=0,k=0;for(let j=i-half;j<=i+half;j++){if(j>=0&&j<n){sum+=a[j];k++}}return sum/k});
+  const sx=sm(cx),sy=sm(cy),W0=items[0].img.width,H0=items[0].img.height,fx=W0/w,fy=H0/h,Z=1.06;
+  const tmp=mk(W0,H0),tx=tmp.getContext('2d');
+  items.forEach((it,i)=>{
+    const c=it.img,x=c.getContext('2d');
+    const ox=Math.max(-.04*c.width,Math.min(.04*c.width,(sx[i]-cx[i])*fx)),oy=Math.max(-.04*c.height,Math.min(.04*c.height,(sy[i]-cy[i])*fy));
+    tx.setTransform(1,0,0,1,0,0);tx.clearRect(0,0,c.width,c.height);tx.drawImage(c,0,0);
+    x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);
+    x.translate(c.width/2+ox,c.height/2+oy);x.scale(Z,Z);x.drawImage(tmp,-c.width/2,-c.height/2);x.setTransform(1,0,0,1,0,0);
+  });
+}
+// Trous angulaires : entre deux images utilisées consécutives (en cercle)
+function findHoles(items,NS){
+  const sl=items.map(i=>i.s).sort((a,b)=>a-b),out=[];
+  for(let i=0;i<sl.length;i++){
+    const a=sl[i],b=sl[(i+1)%sl.length],missing=(((b-a+NS)%NS)||NS)-1;
+    if(missing>0)out.push({a,b,missing});
+  }
+  return out;
+}
+function showCoverage(items,NS,blurry,kept3d,dense){
+  const box=$('cov'),deg=360/NS,holes=findHoles(items,NS),add=(cls,t)=>{const p=document.createElement('p');p.className=cls;p.textContent=t;box.appendChild(p)};
+  box.innerHTML='';
+  if(!dense){add('warn','Mode de secours : '+items.length+' images (capteurs indisponibles). Pour un 360° plus fluide, ouvre la page dans ton navigateur habituel.');return}
+  const big=holes.filter(h=>h.missing>BIG_HOLE),mid=holes.filter(h=>h.missing>3&&h.missing<=BIG_HOLE),small=holes.filter(h=>h.missing<=3);
+  const n=items.length,cls=(big.length||n<120)?'bad':(n<150||mid.length)?'warn':'good';
+  add(cls,n+' images utilisées sur '+NS+' positions ('+deg+'°)'+(blurry?' — '+blurry+' écartée'+(blurry>1?'s':'')+' du 360° car floue'+(blurry>1?'s':''):'')+'. '+kept3d+' images conservées pour la 3D.');
+  if(small.length+mid.length)add(mid.length?'warn':'',(small.length+mid.length)+' petit'+((small.length+mid.length)>1?'s':'')+' trou'+((small.length+mid.length)>1?'s':'')+' comblé'+((small.length+mid.length)>1?'s':'')+' par un fondu'+(mid.length?' (dont '+mid.length+' de 8 à 10°)':'')+'.');
+  big.slice().sort((x,y)=>y.missing-x.missing).slice(0,3).forEach(h=>add('bad','Trou d\u2019environ '+h.missing*deg+'° entre '+h.a*deg+'° et '+h.b*deg+'° : il n\u2019est pas masqué, tu verras un saut. Refais un tour plus lentement.'));
+  if(n<150&&!big.length)add('warn','Objectif : 150 images ou plus. Un tour complet doit durer environ '+IDEAL_S+' secondes.');
+}
+async function buildViewer(useDense,my){
+  let items=[],NS,blurry=0;
+  if(useDense){
+    const{keep,blurry:bl}=pickViewerFrames(denseFrames);blurry=bl.length;
+    const G=[],total=keep.length;
+    for(let i=0;i<total;i++){
+      try{const c=await decodeTo(keep[i].blob,VIEW_W);items.push({s:keep[i].index,img:c});G.push(gray(c))}catch(e){}
+      prog(i+1,total,'Préparation du 360°');if(i%3===2)await sleep();
+      if(my!==runId)return;
+    }
+    if(items.length<20)throw new Error('décodage');
+    try{await stabilizeInPlace(items,G,my)}catch(e){}
+    NS=DN;
+  }else{
+    let last=frames.find(f=>f);
+    items=frames.map((f,i)=>({s:i,img:f||last}));NS=N;
+  }
+  if(my!==runId)return;
+  items.sort((a,b)=>a.s-b.s);
+  vList=items;VNS=NS;
+  cv.width=items[0].img.width;cv.height=items[0].img.height;
+  vDraw=makeSlotViewer(ctx,vList,VNS,BIG_HOLE);pos=0;vel=0;auto=true;vDraw(0,true);
+  showCoverage(items,NS,blurry,denseFrames.length,useDense);
 }
 async function finish(){
   if(!capturing&&!timer&&count<N)return;
   cleanup(false);
   if(dcand)commitDense();
-  $('cap').hidden=true;$('res').hidden=false;
-  if(denseFrames.length>=20){
-    // Cas normal (capteurs OK) : le spin est construit à partir de la capture
-    // dense, comme la 3D. Décodage un par un (pas tout d'un coup) et
-    // réduction à 960px avant stockage : garder 120 images en pleine
-    // résolution (jusqu'à 1600px) en mémoire ferait planter beaucoup de
-    // téléphones.
-    $('save').disabled=true;$('export3d').disabled=true;$('save').textContent='Préparation…';
-    const sorted=denseFrames.slice().sort((a,b)=>a.index-b.index);
-    const out=[];
-    for(const f of sorted){
-      const im=await new Promise(res=>{const i=new Image();i.onload=()=>res(i);i.src=URL.createObjectURL(f.blob)});
-      const s=Math.min(1,960/im.width),c=mk(Math.round(im.width*s),Math.round(im.height*s));
-      c.getContext('2d').drawImage(im,0,0,c.width,c.height);
-      out.push(c);URL.revokeObjectURL(im.src);
-    }
-    frames2=out;
-    $('save').disabled=false;$('export3d').disabled=false;$('save').textContent='Enregistrer le spin 360°';
-  }else{
-    // Repli : capteurs indisponibles ou capture dense trop pauvre, on garde
-    // l'ancien système à 36 images.
-    let last=frames.find(f=>f);
-    frames2=frames.map(f=>f?(last=f):last);
-  }
-  const cv=$('cv');cv.width=frames2[0].width;cv.height=frames2[0].height;
-  pos=0;cur=-1;vel=0;auto=true;
+  const my=++runId;
+  $('cap').hidden=true;$('res').hidden=false;$('stage').hidden=true;
+  $('save').disabled=true;$('export3d').disabled=true;$('cov').innerHTML='';$('exportInfo').textContent='';
+  prog(0,1,'Finalisation des images');
+  while(pending>0)await new Promise(r=>setTimeout(r,30)); // attend les dernières compressions JPEG
+  try{await buildViewer(denseFrames.length>=20,my)}
+  catch(e){try{await buildViewer(false,my)}catch(e2){}}
+  if(my!==runId)return;
+  $('prep').hidden=true;$('stage').hidden=false;
+  $('save').disabled=false;$('export3d').disabled=false;$('save').textContent='Enregistrer le spin 360°';
 }
 
 /* ---------- Résultat : visualiseur ---------- */
 const cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage');
-let pos=0,cur=-1,vel=0,drag=false,last0=0,auto=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+let pos=0,vel=0,drag=false,last0=0,auto=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+const AUTO_DEG=30; // vitesse de rotation automatique, en °/s
 stage.addEventListener('pointerdown',e=>{drag=true;auto=false;last0=e.clientX;vel=0;stage.setPointerCapture(e.pointerId)});
-stage.addEventListener('pointermove',e=>{if(!drag)return;const n=frames2.length||N;const d=(e.clientX-last0)*n/(stage.clientWidth*1.1);last0=e.clientX;pos+=d;vel=d});
+stage.addEventListener('pointermove',e=>{if(!drag)return;const d=(e.clientX-last0)*VNS/(stage.clientWidth*1.1);last0=e.clientX;pos+=d;vel=d});
 stage.addEventListener('pointerup',()=>drag=false);stage.addEventListener('pointercancel',()=>drag=false);
-stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){pos-=1;auto=false}if(e.key==='ArrowRight'){pos+=1;auto=false}});
+stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){pos-=VNS/36;auto=false}if(e.key==='ArrowRight'){pos+=VNS/36;auto=false}});
 (function loop(){
-  if(!drag){if(auto)pos+=.05;else{pos+=vel;vel*=.94;if(Math.abs(vel)<.005)vel=0}}
-  if(frames2.length&&!$('res').hidden){
-    const n=frames2.length,i=((Math.round(pos)%n)+n)%n;
-    if(i!==cur){cur=i;ctx.drawImage(frames2[i],0,0)}
-  }
+  if(!drag){if(auto)pos+=AUTO_DEG/(360/VNS)/60;else{pos+=vel;vel*=.94;if(Math.abs(vel)<.02)vel=0}}
+  if(vDraw&&!$('res').hidden&&!$('stage').hidden)vDraw(pos);
   requestAnimationFrame(loop);
 })();
 $('save').onclick=async()=>{
-  const b=$('save');b.textContent='Préparation…';
-  const U=frames2.map(c=>c.toDataURL('image/jpeg',.78));
-  const js='const U='+JSON.stringify(U)+';let I=[],pos=0,cur=-1,v=0,d=0,x0=0,a=1;const c=document.getElementById("c"),g=c.getContext("2d");'
-   +'Promise.all(U.map(u=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=u}))).then(m=>{I=m;c.width=m[0].width;c.height=m[0].height;'
+  const b=$('save');b.disabled=true;
+  const U=[],S=[];
+  for(let i=0;i<vList.length;i++){
+    b.textContent='Préparation… '+(i+1)+' / '+vList.length;
+    U.push(vList[i].img.toDataURL('image/jpeg',.74));S.push(vList[i].s);
+    if(i%6===5)await sleep();
+  }
+  const js='const U='+JSON.stringify(U)+',S='+JSON.stringify(S)+',NS='+VNS+',BIG='+BIG_HOLE+';'
+   +makeSlotViewer.toString()+';'
+   +'let pos=0,v=0,d=0,x0=0,a=1;const c=document.getElementById("c"),g=c.getContext("2d");'
+   +'Promise.all(U.map(u=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.src=u}))).then(m=>{'
+   +'c.width=m[0].width;c.height=m[0].height;const draw=makeSlotViewer(g,m.map((im,i)=>({s:S[i],img:im})),NS,BIG);'
    +'c.onpointerdown=e=>{d=1;a=0;x0=e.clientX;c.setPointerCapture(e.pointerId)};'
-   +'c.onpointermove=e=>{if(!d)return;const s=(e.clientX-x0)*I.length/(c.clientWidth*1.1);x0=e.clientX;pos+=s;v=s};'
+   +'c.onpointermove=e=>{if(!d)return;const s=(e.clientX-x0)*NS/(c.clientWidth*1.1);x0=e.clientX;pos+=s;v=s};'
    +'c.onpointerup=()=>d=0;'
-   +'(function L(){if(!d){if(a)pos+=.05;else{pos+=v;v*=.94}}const n=I.length,i=((Math.round(pos)%n)+n)%n;if(i!==cur){cur=i;g.drawImage(I[i],0,0)}requestAnimationFrame(L)})()});';
+   +'(function L(){if(!d){if(a)pos+=30/(360/NS)/60;else{pos+=v;v*=.94}}draw(pos);requestAnimationFrame(L)})()});';
   const html='<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Visite 360°</title>'
    +'<style>html,body{margin:0;height:100%;background:#111}body{display:grid;place-items:center}canvas{width:100%;max-height:100%;object-fit:contain;touch-action:pan-y}</style></head><body><canvas id="c"></canvas><script>'+js+'<\/script></body></html>';
   const blob=new Blob([html],{type:'text/html'}),file=new File([blob],'visite-360.html',{type:'text/html'});
-  b.textContent='Enregistrer la visite';
+  b.textContent='Enregistrer la visite';b.disabled=false;
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Visite 360°'});return}catch(e){}}
   const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='visite-360.html';l.click();
 };
@@ -395,6 +461,4 @@ $('export3d').onclick=async()=>{
     info.textContent='Export impossible : '+e.message;
   }
 };
-</script>
-</body>
-</html>
+</script></body></html>

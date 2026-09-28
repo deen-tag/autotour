@@ -1,65 +1,7 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Visite 360°</title>
-<style>
-:root{
-  --bg:#f4f6fb;--panel:#ffffff;--fg:#0f1729;--mut:#5f6b85;--line:#e1e6f0;
-  --acc:#2f6feb;--accfg:#ffffff;--shadow:0 1px 2px rgba(15,23,41,.04),0 10px 24px -12px rgba(15,23,41,.12);
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
-}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}}
-:root[data-theme="dark"]{--bg:#0a0f1c;--panel:#111a2e;--fg:#eef2ff;--mut:#93a1c2;--line:#22304d;--acc:#5b8bf5;--accfg:#071129;--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 24px -12px rgba(0,0,0,.5)}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 -apple-system,"Segoe UI",Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-header,.track,.tools,.note{max-width:760px;margin-left:auto;margin-right:auto;padding-left:18px;padding-right:18px}
-header{padding-top:22px;padding-bottom:14px}
-.back{display:inline-flex;color:var(--mut);text-decoration:none;font-weight:600;font-size:.86rem;margin-bottom:4px}
-h1{margin:0;font-size:1.55rem;letter-spacing:-.02em;font-weight:800}
-#src{margin:4px 0 0;color:var(--mut);font-size:.94rem}
-.stage{position:relative;width:calc(100% - 36px);max-width:724px;margin:0 auto;background:#1a1f2b;touch-action:pan-y;cursor:grab;user-select:none;-webkit-user-select:none;border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
-.stage:focus-visible{outline:3px solid var(--acc);outline-offset:-3px}
-canvas{display:block;width:100%;height:auto}
-.hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(10,15,28,.72);color:#fff;padding:7px 14px;border-radius:99px;font-size:.88rem;font-weight:600;transition:opacity .4s;pointer-events:none}
-.hint.off{opacity:0}
-.load{position:absolute;inset:0;display:grid;place-items:center;background:rgba(10,15,28,.66);color:#fff;font-weight:600;text-align:center;padding:16px}
-.load[hidden]{display:none}
-.track{margin-top:18px}
-.rail{height:4px;background:var(--line);border-radius:4px;position:relative}
-#bar{position:absolute;top:-4px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--acc)}
-.tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
-button{font:inherit;font-weight:700;border-radius:11px;padding:12px 18px;cursor:pointer;border:1.5px solid var(--acc);background:transparent;color:var(--fg);transition:transform .12s ease}
-button.main{background:var(--acc);color:var(--accfg);box-shadow:0 6px 18px -8px rgba(47,111,235,.55)}
-button:active{transform:scale(.97)}
-button:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px}
-.note{margin-top:18px;margin-bottom:34px;color:var(--mut);font-size:.94rem}
-</style>
-</head>
-<body>
-<header>
-  <a class="back" href="index.html">← AutoTour</a>
-  <h1>Visite 360°</h1>
-  <p id="src">Démonstration : véhicule fictif</p>
-</header>
-<div class="stage" id="stage" tabindex="0" aria-label="Véhicule à faire tourner. Flèches gauche et droite pour tourner.">
-  <canvas id="cv" width="640" height="360"></canvas>
-  <div class="hint" id="hint">Glisse pour tourner</div>
-  <div class="load" id="load" hidden></div>
-</div>
-<div class="track"><div class="rail"><div id="bar"></div></div></div>
-<div class="tools">
-  <button class="main" id="bv">Tester avec ma vidéo</button>
-  <button id="bp">Tester avec mes photos</button>
-  <button id="bd">Revoir la démo</button>
-</div>
-<input type="file" id="fv" accept="video/*" hidden>
-<input type="file" id="fp" accept="image/*" multiple hidden>
-<p class="note">Pour un vrai test, filme un tour complet autour du véhicule, à hauteur constante et sans t'arrêter (30 à 60 secondes). Le visualiseur en extrait 36 images à intervalle régulier.</p>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AutoTour Studio — Visite 360°</title><style>
+:root{--bg:#07090d;--panel:#0d1219;--line:#252e3e;--text:#f7f9fc;--muted:#8995a8;--blue:#7582ff;--cyan:#48e5d2}*{box-sizing:border-box}body{margin:0;background:radial-gradient(800px 500px at 75% 0,rgba(109,124,255,.13),transparent 60%),var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{max-width:1200px;margin:auto;padding:24px 20px 60px}.top{height:54px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:850;letter-spacing:-.03em}.brand em{font-style:normal;color:#7c87ff}.back{color:#7d889b;text-decoration:none}.head{margin:45px 0 24px}.eyebrow{color:#78859a;text-transform:uppercase;letter-spacing:.15em;font-size:10px;font-weight:800}.eyebrow i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);margin-right:7px}h1{font-size:48px;line-height:1;letter-spacing:-.055em;margin:9px 0}.head p{color:var(--muted);max-width:680px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px}.viewer{border:1px solid var(--line);border-radius:22px;background:#090d13;overflow:hidden}.stage{position:relative;aspect-ratio:16/9;background:#101722;cursor:grab;touch-action:pan-y}.stage canvas{width:100%;height:100%;display:block}.hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(5,8,12,.76);border:1px solid #293449;color:#9ca8bb;padding:7px 12px;border-radius:99px;font-size:11px;transition:.3s}.hint.off{opacity:0}.load{position:absolute;inset:0;display:grid;place-items:center;background:rgba(5,8,12,.8);color:#fff}.tools{display:flex;gap:9px;padding:14px;border-top:1px solid var(--line);flex-wrap:wrap}.tools button{border:1px solid #2a3548;background:#111722;color:#eef2f8;border-radius:11px;padding:11px 14px;font-weight:750;cursor:pointer}.tools .main{background:linear-gradient(135deg,#96a0ff,#58e3d3);border:0;color:#080b10}.side{display:grid;gap:16px}.card{border:1px solid var(--line);background:linear-gradient(180deg,#0e141d,#0b1017);border-radius:20px;padding:19px}.card h2{font-size:15px;margin:0 0 5px}.card p{margin:0;color:var(--muted);font-size:11px}.info{display:grid;gap:9px;margin-top:16px}.row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1e2735;color:#7e8a9d;font-size:11px}.row b{color:#e3e8f1;font-weight:700}.drop{margin-top:14px;border:1px dashed #344056;border-radius:13px;padding:14px;text-align:center;color:#8b96a9;font-size:11px;cursor:pointer}.note{color:#5f6a7b!important;font-size:10px!important;margin-top:12px!important}@media(max-width:900px){.layout{grid-template-columns:1fr}.head{margin-top:30px}h1{font-size:38px}}
+</style></head><body><div class="wrap"><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="head"><div class="eyebrow"><i></i>Présentation du véhicule</div><h1>Explore la voiture sous tous les angles.</h1><p>Une vue 360° interactive permet de compléter l’annonce et de donner aux acheteurs une vision plus immersive du véhicule.</p></div><div class="layout"><section class="viewer"><div class="stage" id="stage" tabindex="0" aria-label="Véhicule à faire tourner"><canvas id="cv" width="640" height="360"></canvas><div class="hint" id="hint">Glisse pour tourner</div><div id="bar" hidden></div><div class="load" id="load" hidden></div></div><div class="tools"><button class="main" id="bv">Créer depuis une vidéo</button><button id="bp">Importer des photos</button><button id="bd">Voir un exemple</button></div></section><aside class="side"><section class="card"><h2>Présentation actuelle</h2><p id="src">Aperçu · véhicule de démonstration</p><div class="info"><div class="row"><span>Format</span><b>360°</b></div><div class="row"><span>Images</span><b id="count">36</b></div><div class="row"><span>Interaction</span><b>Glisser / flèches</b></div></div></section><section class="card"><h2>Créer depuis votre téléphone</h2><p>Une vidéo autour du véhicule suffit. AutoTour extrait automatiquement les vues.</p><div class="drop" onclick="document.getElementById('fv').click()">Choisir la vidéo du véhicule<br><span style="opacity:.55">MP4 · MOV · WebM</span></div><p class="note">Pour une présentation régulière : 30 à 60 secondes, hauteur constante, sans arrêt.</p></section></aside></div><input type="file" id="fv" accept="video/*" hidden><input type="file" id="fp" accept="image/*" multiple hidden></div><script>
 
-<script>
 const $=id=>document.getElementById(id);
 const cv=$('cv'),ctx=cv.getContext('2d'),stage=$('stage');
 let frames=[],pos=0,cur=-1,vel=0,drag=false,last=0;
@@ -192,6 +134,4 @@ $('bd').onclick=()=>{demo();auto=true;$('hint').classList.remove('off')};
 $('fv').onchange=e=>{if(e.target.files[0])fromVideo(e.target.files[0]);e.target.value=''};
 $('fp').onchange=e=>{if(e.target.files.length)fromPhotos(e.target.files);e.target.value=''};
 demo();
-</script>
-</body>
-</html>
+</script></body></html>
