@@ -33,8 +33,9 @@ $('begin').onclick=async()=>{
       await DeviceMotionEvent.requestPermission();
   }catch(e){}
   try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}},audio:false});
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});
     $('vid').srcObject=stream;await $('vid').play();
+    await tuneCamera(stream);
   }catch(e){
     $('err').textContent='La caméra n\u2019est pas accessible depuis cette page (autorisation refusée ou bloquée par l\u2019application). Ouvre la page dans un navigateur, ou héberge-la sur ton propre site.';
     return;
@@ -72,15 +73,32 @@ $('go').onclick=()=>{
     }
   },1800);
 };
+// Réglages anti-flou (là où le navigateur les expose, surtout Chrome Android) :
+// mise au point continue, exposition auto, et temps de pose plafonné pour figer le mouvement.
+let lowLight=false;
+async function tuneCamera(st){
+  try{
+    const t=st.getVideoTracks()[0],caps=t.getCapabilities?t.getCapabilities():{},adv={};
+    if(caps.focusMode&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';
+    if(caps.exposureMode&&caps.exposureMode.includes('continuous'))adv.exposureMode='continuous';
+    if(caps.exposureTime){ // unité : 100 µs. Cible 1/120 s = 83, sans sortir de la plage permise
+      const {min,max}=caps.exposureTime;adv.exposureMode='manual';adv.exposureTime=Math.min(max,Math.max(min,83));
+      if(caps.iso)adv.iso=caps.iso.max*.6;
+    }
+    if(Object.keys(adv).length)await t.applyConstraints({advanced:[adv]});
+  }catch(e){}
+}
 // Netteté d'une image (variance du laplacien sur la zone centrale)
 const sm=mk(320,180),sctx=sm.getContext('2d',{willReadFrequently:true});
 function sharp(v){
   const w=v.videoWidth,h=v.videoHeight;
-  sctx.drawImage(v,w*.2,h*.25,w*.6,h*.5,0,0,320,180);
-  const d=sctx.getImageData(0,0,320,180).data;let s=0,n=0;
+  // Recadrage 320x180 en pixels réels (pas de réduction) : le flou de bougé reste visible pour le score
+  sctx.drawImage(v,Math.round(w/2-160),Math.round(h/2-90),320,180,0,0,320,180);
+  const d=sctx.getImageData(0,0,320,180).data;let s=0,n=0,lum=0;
   for(let y=1;y<179;y++)for(let x=1;x<319;x++){
-    const i=(y*320+x)*4+1,l=4*d[i]-d[i-4]-d[i+4]-d[i-1280]-d[i+1280];s+=l*l;n++;
+    const i=(y*320+x)*4+1,l=4*d[i]-d[i-4]-d[i+4]-d[i-1280]-d[i+1280];s+=l*l;lum+=d[i];n++;
   }
+  lowLight=lum/n<70;
   return s/n;
 }
 function snap(v){
@@ -218,6 +236,7 @@ function onOri(e){
   else if(dir&&p<-15)guide('warn',walk,'Tourne dans l\u2019autre sens');
   else if(stalled)guide('warn',walk,'Continue à tourner');
   else if(dir&&p>15&&zone==='slow')guide('slow',walk,'Un peu trop lent — avance un peu plus vite');
+  else if(dir&&lowLight)guide('warn',walk,'Peu de lumière : va plus lentement ou filme en pleine journée');
   else guide('ok',walk,dir?'Parfait, garde cette vitesse':'Bien, continue');
 }
 
@@ -252,7 +271,7 @@ function makeSlotViewer(g,list,NS,BIG){
 }
 
 /* ---------- Préparation du viewer ---------- */
-const VIEW_W=800,BIG_HOLE=5;   // viewer en 800 px ; trous de plus de 5 images (10°) jamais masqués
+const VIEW_W=800,BIG_HOLE=2;   // viewer en 800 px ; fondu limité aux trous de 1-2 images (4°) : au-delà, image la plus proche, sans double image
 const sleep=()=>new Promise(r=>requestAnimationFrame(()=>r()));
 function prog(done,total,label){$('prep').hidden=false;$('prepTxt').textContent=label+' : '+done+' / '+total;$('prepBar').style.width=(total?done/total*100:0)+'%'}
 function median(a){const b=a.slice().sort((x,y)=>x-y),m=b.length>>1;return b.length%2?b[m]:(b[m-1]+b[m])/2}
@@ -322,7 +341,7 @@ function showCoverage(items,NS,blurry,kept3d,dense){
   const box=$('cov'),deg=360/NS,holes=findHoles(items,NS),add=(cls,t)=>{const p=document.createElement('p');p.className=cls;p.textContent=t;box.appendChild(p)};
   box.innerHTML='';
   if(!dense){add('warn','Mode de secours : '+items.length+' images (capteurs indisponibles). Pour un 360° plus fluide, ouvre la page dans ton navigateur habituel.');return}
-  const big=holes.filter(h=>h.missing>BIG_HOLE),mid=holes.filter(h=>h.missing>3&&h.missing<=BIG_HOLE),small=holes.filter(h=>h.missing<=3);
+  const big=holes.filter(h=>h.missing>BIG_HOLE),mid=[],small=holes.filter(h=>h.missing<=BIG_HOLE);
   const n=items.length,cls=(big.length||n<120)?'bad':(n<150||mid.length)?'warn':'good';
   add(cls,n+' images utilisées sur '+NS+' positions ('+deg+'°)'+(blurry?' — '+blurry+' écartée'+(blurry>1?'s':'')+' du 360° car floue'+(blurry>1?'s':''):'')+'. '+kept3d+' images conservées pour la 3D.');
   if(small.length+mid.length)add(mid.length?'warn':'',(small.length+mid.length)+' petit'+((small.length+mid.length)>1?'s':'')+' trou'+((small.length+mid.length)>1?'s':'')+' comblé'+((small.length+mid.length)>1?'s':'')+' par un fondu'+(mid.length?' (dont '+mid.length+' de 8 à 10°)':'')+'.');
