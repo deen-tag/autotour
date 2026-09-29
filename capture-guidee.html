@@ -112,18 +112,14 @@ $('go').onclick=()=>{
     }
   },1800);
 };
-// Réglages anti-flou (là où le navigateur les expose, surtout Chrome Android) :
-// mise au point continue, exposition auto, et temps de pose plafonné pour figer le mouvement.
+// Réglages caméra (là où le navigateur les expose, surtout Chrome Android) :
+// mise au point et exposition continues. On ne force PAS le temps de pose : de nuit ou en intérieur, ça assombrit l'image.
 let lowLight=false,wl=null; // wl : verrou pour empêcher la mise en veille de l'écran
 async function tuneCamera(st){
   try{
     const t=st.getVideoTracks()[0],caps=t.getCapabilities?t.getCapabilities():{},adv={};
     if(caps.focusMode&&caps.focusMode.includes('continuous'))adv.focusMode='continuous';
     if(caps.exposureMode&&caps.exposureMode.includes('continuous'))adv.exposureMode='continuous';
-    if(caps.exposureTime){ // unité : 100 µs. Cible 1/120 s = 83, sans sortir de la plage permise
-      const {min,max}=caps.exposureTime;adv.exposureMode='manual';adv.exposureTime=Math.min(max,Math.max(min,83));
-      if(caps.iso)adv.iso=caps.iso.max*.6;
-    }
     if(Object.keys(adv).length)await t.applyConstraints({advanced:[adv]});
   }catch(e){}
 }
