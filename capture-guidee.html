@@ -1,7 +1,7 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>AutoTour Studio — Capture</title><style>
 :root{--bg:#07090d;--panel:#0d1219;--line:#242d3d;--text:#f7f9fc;--muted:#8995a8;--blue:#7582ff;--cyan:#48e5d2;--danger:#ff5964;--ok:#48e5a6}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Inter,system-ui,-apple-system,"Segoe UI",sans-serif}button{font:inherit}.page{min-height:100vh;max-width:880px;margin:auto;padding:42px 22px 60px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:46px}.brand{font-weight:850;letter-spacing:-.03em}.brand em{font-style:normal;color:#7c87ff}.back{color:#788397;text-decoration:none}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#758197;font-weight:800}.eyebrow i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 12px var(--cyan);margin-right:7px}h1{font-size:clamp(36px,6vw,64px);line-height:.95;letter-spacing:-.06em;margin:11px 0 12px}.intro{color:var(--muted);max-width:600px;font-size:15px}.guide{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;margin-top:34px}.panel{background:linear-gradient(180deg,#0f151f,#0b1017);border:1px solid var(--line);border-radius:22px;padding:22px}.tips{display:grid;gap:10px}.tip{display:grid;grid-template-columns:38px 1fr;gap:13px;align-items:center;padding:14px;border:1px solid #202a39;border-radius:14px;background:#0a0f16}.num{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:#151d2a;color:#8c98ff;font-weight:850}.tip b{font-size:13px}.tip span{display:block;color:#7f8a9d;font-size:11px;margin-top:3px}.primary{width:100%;border:0;border-radius:14px;padding:16px;background:linear-gradient(135deg,#96a0ff,#58e3d3);font-weight:850;color:#080b10;cursor:pointer;margin-top:18px}.micro{margin-top:12px;color:#657185;font-size:11px;text-align:center}#err{color:#ff7b83;font-weight:650;margin-top:14px}.capture{position:fixed;inset:0;background:#000;color:#fff;overflow:hidden;z-index:20}#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.frame{position:absolute;left:8%;right:8%;top:29%;bottom:26%;border:2px dashed rgba(255,255,255,.65);border-radius:22px}.frame.ok{border-color:#48e5a6;border-style:solid}.frame.warn{border-color:#ffb020;border-style:solid}.frame.bad{border-color:#ff5964;border-style:solid}.arrow{position:absolute;left:0;right:0;top:90px;text-align:center;font-size:48px;text-shadow:0 2px 10px #000}.arrow.ok{color:#48e5a6}.arrow.warn{color:#ffb020}.arrow.bad{color:#ff5964}.rot{position:absolute;left:16px;right:16px;top:46%;background:rgba(5,8,12,.72);padding:14px;border-radius:14px;text-align:center;font-weight:700;backdrop-filter:blur(12px)}.msg{position:absolute;left:18px;right:110px;top:18px;background:rgba(5,8,12,.7);padding:11px 14px;border-radius:13px;font-weight:700;backdrop-filter:blur(12px)}#stop{position:absolute;right:18px;top:18px;padding:10px 14px;border:1px solid rgba(255,255,255,.35);border-radius:12px;background:rgba(5,8,12,.6);color:#fff}.pct{position:absolute;left:18px;bottom:140px;font-weight:800}.ticks{position:absolute;left:18px;right:18px;bottom:119px;display:flex;gap:2px}.ticks i{flex:1;height:7px;border-radius:3px;background:rgba(255,255,255,.25)}.ticks i.on{background:#5fe1d3}.speed{position:absolute;left:18px;right:18px;bottom:175px;background:rgba(5,8,12,.7);border-radius:14px;padding:11px 14px;backdrop-filter:blur(12px)}.speed-top{display:flex;justify-content:space-between;margin-bottom:8px}.gauge{height:9px;display:flex;border-radius:8px;overflow:hidden}.gauge i{flex:1}.gauge i:nth-child(1){background:#6477ff}.gauge i:nth-child(2){background:#48e5a6}.gauge i:nth-child(3){background:#ffb020}.gauge i:nth-child(4){background:#ff5964}.gauge u{position:absolute;width:4px;height:19px;background:#fff;margin-top:-5px;text-decoration:none}.speed-sub{font-size:10px;opacity:.65;margin-top:6px}.dens{position:absolute;left:18px;right:18px;bottom:88px;width:calc(100% - 36px);height:7px}.main{position:absolute;left:50%;transform:translateX(-50%);bottom:24px;border:0;border-radius:14px;padding:14px 24px;background:linear-gradient(135deg,#96a0ff,#58e3d3);color:#080b10;font-weight:850;box-shadow:0 10px 35px rgba(0,0,0,.35)}#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}.result{max-width:1100px}.result h2{font-size:30px;letter-spacing:-.04em;margin:0}.result-intro{color:var(--muted);max-width:620px}.stage{position:relative;background:#090d13;border:1px solid var(--line);border-radius:22px;overflow:hidden;margin:28px 0 14px;cursor:grab}.stage canvas{display:block;width:100%;height:auto}.spin-tag{position:absolute;left:14px;bottom:14px;padding:7px 10px;border-radius:99px;background:rgba(5,8,12,.72);font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aab4c4}.actions{display:flex;gap:10px;flex-wrap:wrap}.actions button{border:1px solid #2b3548;background:#111722;color:#eef2f8;padding:13px 17px;border-radius:12px;font-weight:750}.actions .main{position:static;transform:none;background:linear-gradient(135deg,#96a0ff,#58e3d3);color:#080b10;border:0}.prep .bar{height:7px;background:#1d2634;border-radius:5px;overflow:hidden}.prep .bar i{display:block;width:0;height:100%;background:#6f7dff}.cov{display:grid;gap:7px;margin:12px 0}.cov p{padding:9px 12px;border-radius:10px;border:1px solid #222d3d;color:#8f9aac;font-size:11px;margin:0}.cov p.good{border-color:#236b58;color:#73d9bb}.cov p.warn{border-color:#6c5425;color:#f0c978}.cov p.bad{border-color:#6d2d34;color:#ff8b93}.mut{color:var(--muted);font-size:11px}@media(max-width:800px){.guide{grid-template-columns:1fr}.page{padding-top:24px}}
 </style></head><body>
-<div class="page" id="start"><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="eyebrow"><i></i>Capture du véhicule</div><h1>Un tour. Une présentation 3D.</h1><p class="intro">Filme simplement la voiture avec ton téléphone. AutoTour prépare les vues nécessaires pour créer une présentation immersive, pensée pour enrichir ton annonce.</p><div class="guide"><section class="panel"><div class="tips"><div class="tip"><div class="num">01</div><div><b>Cadre toute la voiture</b><span>Garde le véhicule entier dans le cadre, téléphone à hauteur de poitrine.</span></div></div><div class="tip"><div class="num">02</div><div><b>Fais le tour du véhicule</b><span>Un tour complet et fluide permet de montrer la voiture sous tous ses angles.</span></div></div><div class="tip"><div class="num">03</div><div><b>Garde un mouvement fluide</b><span>Le guidage t’aide à obtenir une couverture régulière et exploitable.</span></div></div></div><button class="primary" id="begin">Ouvrir la caméra <span>→</span></button><div class="micro">Caméra utilisée uniquement pendant la capture · aucun compte nécessaire</div><p id="err"></p></section><section class="panel" style="display:grid;place-items:center;min-height:300px;background:radial-gradient(circle at 50% 50%,rgba(109,124,255,.14),transparent 55%),#0a0f16"><div style="text-align:center"><div style="font-size:70px;line-height:1;margin-bottom:15px">◉</div><b style="font-size:15px">Présentation prête pour l’annonce</b><p class="mut">Le guidage t’accompagne pour capturer les angles importants du véhicule.</p></div></section></div></div>
+<div class="page" id="start"><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="eyebrow"><i></i>Capture du véhicule</div><h1>Un tour. Une présentation 3D.</h1><p class="intro">Filme simplement la voiture avec ton téléphone. AutoTour prépare les vues nécessaires pour créer une présentation immersive, pensée pour enrichir ton annonce.</p><div class="guide"><section class="panel"><div class="tips"><div class="tip"><div class="num">01</div><div><b>Cadre toute la voiture</b><span>Garde le véhicule entier dans le cadre, téléphone à hauteur de poitrine.</span></div></div><div class="tip"><div class="num">02</div><div><b>Fais le tour du véhicule</b><span>Un tour complet et fluide permet de montrer la voiture sous tous ses angles.</span></div></div><div class="tip"><div class="num">03</div><div><b>Garde un mouvement fluide</b><span>Le guidage t’aide à obtenir une couverture régulière et exploitable.</span></div></div></div><button class="primary" id="begin">Ouvrir la caméra <span>→</span></button><button id="resume" hidden style="width:100%;margin-top:10px;padding:14px;border:1px solid #2b3548;border-radius:14px;background:#111722;color:#eef2f8;font-weight:750;cursor:pointer"></button><div class="micro">Caméra utilisée uniquement pendant la capture · aucun compte nécessaire</div><p id="err"></p></section><section class="panel" style="display:grid;place-items:center;min-height:300px;background:radial-gradient(circle at 50% 50%,rgba(109,124,255,.14),transparent 55%),#0a0f16"><div style="text-align:center"><div style="font-size:70px;line-height:1;margin-bottom:15px">◉</div><b style="font-size:15px">Présentation prête pour l’annonce</b><p class="mut">Le guidage t’accompagne pour capturer les angles importants du véhicule.</p></div></section></div></div>
 <div id="cap" class="capture" hidden><video id="vid" playsinline muted autoplay></video><div class="frame" id="frame"></div><div class="hz" id="hz"></div><div class="arrow" id="arrow"></div><div class="rot" id="rot" hidden>↻ Tourne le téléphone en paysage pour un meilleur résultat</div><div class="msg" id="msg">Cadre le véhicule en entier</div><button id="stop">Quitter</button><div class="pct" id="pct"></div><div class="ticks" id="ticks"></div><canvas class="dens" id="dens" width="180" height="10" hidden></canvas><div class="speed" id="speed" hidden><div class="speed-top"><b id="speedLbl">Démarre doucement</b><span id="speedVal"></span></div><div class="gauge"><i></i><i></i><i></i><i></i><u id="needle" style="left:0%"></u></div><div class="speed-sub">Rythme cible : environ 40 s pour un tour complet</div></div><button class="main" id="go">Démarrer le tour</button><div id="flash"></div></div>
 <div class="page result" id="res" hidden><div class="top"><a class="brand" href="index.html">AutoTour <em>Studio</em></a><a class="back" href="index.html">← Studio</a></div><div class="eyebrow"><i></i>Rendu généré</div><h2>Ton véhicule, prêt à être présenté.</h2><p class="result-intro">Fais tourner l'aperçu pour vérifier la couverture. Tu peux enregistrer le spin ou envoyer les images vers le pipeline 3D.</p><div class="prep" id="prep" hidden><span id="prepTxt"></span><div class="bar"><i id="prepBar"></i></div></div><div class="stage" id="stage" tabindex="0"><canvas id="cv"></canvas><span class="spin-tag">360° interactif</span></div><div class="cov" id="cov"></div><div class="actions"><button class="main" id="save">Enregistrer la présentation 360°</button><button id="export3d">Créer le modèle 3D</button><button id="again">Nouvelle capture</button></div><p class="mut" id="exportInfo" style="margin-top:12px"></p></div>
 <script>
@@ -23,6 +23,42 @@ function guide(st,glyph,text){
   lastSt=st;
 }
 
+/* ---------- Sauvegarde locale (IndexedDB) : reprendre une capture après un plantage ---------- */
+let idb=null;
+function idbOpen(){return idb||(idb=new Promise((ok,ko)=>{
+  try{const r=indexedDB.open('autotour-capture',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('frames',{keyPath:'index'});
+    r.onsuccess=()=>ok(r.result);r.onerror=()=>ko(r.error)}catch(e){ko(e)}}))}
+const idbRun=(mode,fn)=>idbOpen().then(db=>new Promise((ok,ko)=>{
+  const t=db.transaction('frames',mode),req=fn(t.objectStore('frames'));
+  t.oncomplete=()=>ok(req&&req.result);t.onerror=t.onabort=()=>ko(t.error)}));
+const saveFrame=f=>idbRun('readwrite',s=>s.put({index:f.index,angle_deg:f.angle_deg,score:f.score,blob:f.blob,t:Date.now()})).catch(()=>{});
+const clearSaved=()=>idbRun('readwrite',s=>s.clear()).catch(()=>{});
+const loadSaved=()=>idbRun('readonly',s=>s.getAll()).then(a=>a||[]).catch(()=>[]);
+async function refreshResume(){
+  const b=$('resume'),all=await loadSaved();
+  if(all.length<20){b.hidden=true;return}
+  const min=Math.round((Date.now()-Math.max(...all.map(f=>f.t||0)))/60000);
+  b.textContent='Reprendre la dernière capture ('+all.length+' images, '+(min<1?'à l\u2019instant':min<60?'il y a '+min+' min':'il y a '+Math.round(min/60)+' h')+')';
+  b.hidden=false;
+}
+$('resume').onclick=async()=>{
+  const all=await loadSaved();if(all.length<20)return;
+  denseFrames=all.map(f=>({index:f.index,angle_deg:f.angle_deg,score:f.score,blob:f.blob})).sort((a,b)=>a.index-b.index);
+  dstat=new Uint8Array(DN);denseFrames.forEach(f=>{dstat[f.index]=1});
+  frames=Array(N).fill(null);count=0;dcand=null;pending=0;
+  const my=++runId;
+  $('start').hidden=true;$('cap').hidden=true;$('res').hidden=false;$('stage').hidden=true;
+  $('save').disabled=true;$('export3d').disabled=true;$('cov').innerHTML='';$('exportInfo').textContent='';
+  prog(0,1,'Chargement de la capture');
+  try{await buildViewer(true,my)}
+  catch(e){$('res').hidden=true;$('start').hidden=false;$('err').textContent='Impossible de relire la capture sauvegardée.';return}
+  if(my!==runId)return;
+  $('prep').hidden=true;$('stage').hidden=false;
+  $('save').disabled=false;$('export3d').disabled=false;$('save').textContent='Enregistrer le spin 360°';
+};
+refreshResume();
+
 /* ---------- Démarrage ---------- */
 $('begin').onclick=async()=>{
   $('err').textContent='';
@@ -36,6 +72,7 @@ $('begin').onclick=async()=>{
     stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:30}},audio:false});
     $('vid').srcObject=stream;await $('vid').play();
     await tuneCamera(stream);
+    try{if(navigator.wakeLock)wl=await navigator.wakeLock.request('screen')}catch(e){}
   }catch(e){
     $('err').textContent='La caméra n\u2019est pas accessible depuis cette page (autorisation refusée ou bloquée par l\u2019application). Ouvre la page dans un navigateur, ou héberge-la sur ton propre site.';
     return;
@@ -46,6 +83,7 @@ $('begin').onclick=async()=>{
 function prepare(){
   frames=Array(N).fill(null);count=0;acc=0;prevH=null;dir=0;capturing=false;gotOri=false;
   denseFrames=[];dcand=null;dLastCommit=-1;lastSkip=0;dstat=new Uint8Array(DN);pending=0;rateS=0;zone='ok';runId++;showLive(false);
+  clearSaved();
   $('ticks').innerHTML='<i></i>'.repeat(N);
   $('go').hidden=false;guide('','','Cadre le véhicule en entier');cand=null;lastCommit=-1;checkRot();
   const ev='ondeviceorientationabsolute' in window?'deviceorientationabsolute':'deviceorientation';
@@ -58,7 +96,8 @@ function cleanup(back){
   window.removeEventListener(window._ev,onOri);
   window.removeEventListener('devicemotion',onMotion);
   if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}
-  if(back){$('cap').hidden=true;$('start').hidden=false}
+  try{if(wl){wl.release();wl=null}}catch(e){}
+  if(back){$('cap').hidden=true;$('start').hidden=false;setTimeout(refreshResume,400)}
 }
 
 /* ---------- Le tour ---------- */
@@ -75,7 +114,7 @@ $('go').onclick=()=>{
 };
 // Réglages anti-flou (là où le navigateur les expose, surtout Chrome Android) :
 // mise au point continue, exposition auto, et temps de pose plafonné pour figer le mouvement.
-let lowLight=false;
+let lowLight=false,wl=null; // wl : verrou pour empêcher la mise en veille de l'écran
 async function tuneCamera(st){
   try{
     const t=st.getVideoTracks()[0],caps=t.getCapabilities?t.getCapabilities():{},adv={};
@@ -121,9 +160,9 @@ function commitDense(){
     dstat[idx]=1;
     // Une seule image par tranche : si la tranche a déjà été enregistrée (angle qui oscille), on garde la plus nette.
     pending++;
-    canvas.toBlob(b=>{pending--;if(!b)return;const k=denseFrames.findIndex(f=>f.index===idx);
-      if(k<0)denseFrames.push({index:idx,angle_deg,blob:b,score});
-      else if(score>denseFrames[k].score)denseFrames[k]={index:idx,angle_deg,blob:b,score}},'image/jpeg',.85);
+    canvas.toBlob(b=>{pending--;if(!b)return;const k=denseFrames.findIndex(f=>f.index===idx),rec={index:idx,angle_deg,blob:b,score};
+      if(k<0){denseFrames.push(rec);saveFrame(rec)}
+      else if(score>denseFrames[k].score){denseFrames[k]=rec;saveFrame(rec)}},'image/jpeg',.85);
     dcand.canvas=null;drawDens();
   }
   dLastCommit=dcand?dcand.idx:dLastCommit;
@@ -425,7 +464,7 @@ $('save').onclick=async()=>{
   if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:'Visite 360°'});return}catch(e){}}
   const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='visite-360.html';l.click();
 };
-$('again').onclick=()=>{$('res').hidden=true;$('start').hidden=false};
+$('again').onclick=()=>{$('res').hidden=true;$('start').hidden=false;refreshResume()};
 
 /* ---------- Export du jeu de données pour reconstruction 3D (COLMAP + gsplat) ---------- */
 // Important : on exporte depuis `frames` (les vraies captures), pas `frames2`
